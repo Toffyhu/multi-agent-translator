@@ -1,0 +1,211 @@
+# 模型注册表 — 翻译流水线模型选型配置（国内可访问版）
+#
+# 全部模型通过国内可直接访问的API调用，包括：
+# - DeepSeek V4-Pro/Flash（主力）
+# - Qwen3 Max / Qwen-MT（阿里云百炼）
+# - Kimi K2（月之暗面，200万token长上下文）
+# - GLM-4.6（智谱，工具调用稳定）
+
+# 全局默认（使用阿里云免费额度）
+default_provider: aliyun
+default_temperature: 0.3
+default_max_tokens: 4096
+
+providers:
+  # ── 主力：DeepSeek（国内可直接访问） ──
+  deepseek:
+    base_url: "https://api.deepseek.com/v1"
+    api_key_env: "DEEPSEEK_API_KEY"
+    models:
+      v4-pro:
+        id: "deepseek-chat"
+        context_window: 65536
+        cost_per_1k_input: 0.00058
+        cost_per_1k_output: 0.00348
+        tags: [reasoning, long-context, chinese-native, translation-strong]
+      v4-flash:
+        id: "deepseek-chat"
+        context_window: 65536
+        cost_per_1k_input: 0.00005
+        cost_per_1k_output: 0.00028
+        tags: [fast, cheap, chinese-native]
+
+  # ── 阿里云百炼：全系模型免费额度优先 ──
+  # 模型ID必须精确匹配DashScope控制台显示的模型名
+  # 旧名(qwen3-max/qwen-plus)走付费通道，新名(qwen3.7-max等)走免费额度
+  aliyun:
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    api_key_env: "DASHSCOPE_API_KEY"
+    models:
+      # ── Qwen系列（每款100万免费token，使用正确模型ID） ──
+      qwen3.7-max:
+        id: "qwen3.7-max"
+        context_window: 1048576
+        cost_per_1k_input: 0.00000
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, reasoning, long-context, chinese-best]
+        free_tier: "100万token"
+      qwen3.7-plus:
+        id: "qwen3.7-plus"
+        context_window: 131072
+        cost_per_1k_input: 0.00000
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, fast, chinese]
+        free_tier: "100万token"
+      qwen3.6-flash:
+        id: "qwen3.6-flash"
+        context_window: 131072
+        cost_per_1k_input: 0.00000
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, fastest, cheap]
+        free_tier: "100万token"
+      qwen-max:
+        id: "qwen-max"
+        context_window: 32768
+        cost_per_1k_input: 0.00000
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, reasoning, chinese]
+        free_tier: "100万token"
+      qwen-plus:
+        id: "qwen-plus"
+        context_window: 131072
+        cost_per_1k_input: 0.00000
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, fast, cheap]
+        free_tier: "100万token"
+      qwen-turbo:
+        id: "qwen-turbo"
+        context_window: 131072
+        cost_per_1k_input: 0.00000
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, fastest]
+        free_tier: "100万token"
+      qwen-mt-plus:
+        id: "qwen-mt-plus"
+        context_window: 4096
+        cost_per_1k_input: 0.00246
+        cost_per_1k_output: 0.00737
+        tags: [translation-specialist, terminology-control, domain-hint]
+        extra_options:
+          supports_terminology: true
+          supports_translation_memory: true
+          supports_domain_hint: true
+
+      # ── DeepSeek 通过阿里云调用（共享100万免费token） ──
+      deepseek-r1:
+        id: "deepseek-r1"
+        context_window: 65536
+        cost_per_1k_input: 0.00000
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, reasoning, translation-strong]
+        free_tier: "100万token via 阿里云"
+      deepseek-v3:
+        id: "deepseek-v3"
+        context_window: 65536
+        cost_per_1k_input: 0.00000
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, fast, translation]
+        free_tier: "100万token via 阿里云"
+
+      # ── GLM智谱通过阿里云调用 ──
+      glm-4:
+        id: "qwen-plus"  # GLM通过阿里云暂不可用，回退Qwen
+        context_window: 131072
+        cost_per_1k_input: 0.00000
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, tool-calling, structured-output]
+        free_tier: "100万token via 阿里云"
+
+  # ── 月之暗面 Kimi K2（200万token长上下文，国内可访问） ──
+  kimi:
+    base_url: "https://api.moonshot.cn/v1"
+    api_key_env: "MOONSHOT_API_KEY"
+    models:
+      k2:
+        id: "kimi-k2"
+        context_window: 2097152  # 200万token
+        cost_per_1k_input: 0.00060
+        cost_per_1k_output: 0.00250
+        tags: [ultra-long-context, chinese-creative, legal, literary]
+
+  # ── 智谱 GLM-4.6（工具调用稳定，国内可访问） ──
+  zhipu:
+    base_url: "https://open.bigmodel.cn/api/paas/v4"
+    api_key_env: "ZHIPU_API_KEY"
+    models:
+      glm-4.6:
+        id: "glm-4.6"
+        context_window: 200000
+        cost_per_1k_input: 0.00050
+        cost_per_1k_output: 0.00150
+        tags: [tool-calling, structured-output, enterprise]
+
+  # ── OpenAI（国内不可直接访问，仅作参考/备选） ──
+  openai:
+    base_url: "https://api.openai.com/v1"
+    api_key_env: "OPENAI_API_KEY"
+    models:
+      gpt-5.4:
+        id: "gpt-5.4"
+        context_window: 400000
+        cost_per_1k_input: 0.00125
+        cost_per_1k_output: 0.01000
+        tags: [reasoning, best-overall, reference-only]
+
+  # ── Anthropic Claude（国内不可直接访问，仅作参考） ──
+  anthropic:
+    base_url: "https://api.anthropic.com/v1"
+    api_key_env: "ANTHROPIC_API_KEY"
+    models:
+      claude-opus-4.7:
+        id: "claude-opus-4-7"
+        context_window: 200000
+        cost_per_1k_input: 0.01500
+        cost_per_1k_output: 0.07500
+        tags: [reasoning, literary, reference-only]
+
+# ─── Agent → 模型映射（免费额度精打细算版） ───
+# 原则: 能用qwen3.6-flash解决的问题不用plus，能用plus不用max
+# max仅保留用于全书分析和复杂事实核查
+agent_model_mapping:
+  book_analyzer:        # ①全书分析（需要1M长上下文+深度分析）
+    primary: "aliyun/qwen3.7-max"
+    fallback: "aliyun/qwen3.7-plus"
+    rationale: >
+      全书分析仅跑一次，需要1M上下文。qwen3.7-max推理能力强。
+
+  term_stylist:          # ②术语风格（短文本，快速分析）
+    primary: "aliyun/qwen3.6-flash"
+    fallback: "aliyun/qwen3.7-plus"
+    rationale: >
+      术语分析文本量小，qwen3.6-flash足够快速完成。省token给max场景。
+
+  chapter_translator:    # ③分章翻译（主力生产环节）
+    default: "aliyun/qwen3.7-plus"       # 70%通用章节
+    legal: "aliyun/qwen3.7-max"          # 法律/复杂文本
+    literary: "aliyun/qwen3.7-max"       # 关键文学段落
+    terminology_heavy: "aliyun/qwen-plus"  # 术语密集型
+    easy: "aliyun/qwen3.6-flash"         # 简单叙述章节
+    rationale: >
+      主力用qwen3.7-plus，均衡速度与质量（token消耗约max的1/10）。
+      简单的叙述章节用qwen3.6-flash最省。
+      复杂文本/文学段落才用max。
+
+  chief_editor:          # ④主编终审（校对纠错，不需要深度推理）
+    primary: "aliyun/qwen3.7-plus"
+    fallback: "aliyun/qwen3.6-flash"
+    rationale: >
+      编辑任务主要是修正代词/标点等表层问题，plus足够。
+      不需要max的深度推理。
+
+  rewriter:              # ⑤再创重述（创造性写作）
+    primary: "aliyun/qwen3.7-plus"
+    fallback: "aliyun/qwen3.6-flash"
+    rationale: >
+      再创重述需要文学创造力，plus的创意能力优于flash。
+
+  fact_checker:          # ⑥事实核查（人名地名数字校验）
+    primary: "aliyun/qwen3.7-plus"
+    fallback: "aliyun/qwen3.7-max"
+    rationale: >
+      常规核查plus足够。大段批量核查需要max的1M上下文。

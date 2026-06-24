@@ -1,0 +1,87 @@
+# 翻译流水线全局配置
+
+pipeline:
+  name: "TranslationPipeline"
+  version: "0.1.0"
+  quality_mode: true  # 质量优先模式
+
+stages:
+  # ─── 阶段0: 前置筹备 ───
+  preparation:
+    enabled: true
+    book_analyzer:
+      agent: "book_analyzer"
+      max_chapter_size_tokens: 50000
+      context_overlap_tokens: 1000
+    term_stylist:
+      agent: "term_stylist"
+      style_dimensions: ["sentence_structure", "vocabulary_density", "rhetoric_preference", "tone_register", "cultural_adaptation"]
+      require_human_approval: true  # 强制卡点：术语表+风格手册必须人工确认
+
+  # ─── 阶段1: 并行初译 ───
+  translation:
+    enabled: true
+    agent: "chapter_translator"
+    max_concurrency: 8
+    context_window:
+      prev_chapter_tail_tokens: 500
+      next_chapter_head_tokens: 500
+    quality_gates:
+      - name: "term_compliance"
+        type: "deterministic"
+        threshold: 0.98  # 术语遵循率 > 98%
+      - name: "completeness"
+        type: "deterministic"
+        threshold: 0.98  # 漏译率 < 2%
+      - name: "basic_fluency"
+        type: "llm_scored"
+        threshold: 0.80  # 基础通顺度
+
+  # ─── 阶段2: 统稿终审 ───
+  editing:
+    enabled: true
+    chief_editor:
+      agent: "chief_editor"
+      modes: ["draft", "review"]  # 统稿模式 → 冷却 → 评审模式
+      cooldown_hint: "请在统稿完成后稍作暂停，以编辑视角重新审视全稿"
+    fact_checker:
+      agent: "fact_checker"
+      verify_dimensions:
+        - person_names
+        - place_names
+        - numeric_values
+        - professional_concepts
+        - citations
+
+  # ─── 阶段3: 回退机制 ───
+  rollback:
+    max_rollbacks_per_chapter: 2
+    triggers:
+      term_compliance_below: 0.95     # 术语遵循率 < 95% → 回退初译
+      completeness_below: 0.98         # 漏译率 > 2% → 回退初译
+      fidelity_score_below: 60         # 信度 < 60/100 → 回退初译
+      style_consistency_below: 70      # 风格一致性 < 70/100 → 回退主编
+      segment_superiority_threshold: 0.30  # 平行版>30%段落优于主编版 → 回退主编
+
+# ─── 全局资产库配置 ───
+assets:
+  base_dir: "./assets_store"
+  components:
+    - name: "source_archive"
+      path: "source/"
+      description: "原文档案库：完整原文、章节结构、伏笔关系图"
+    - name: "terminology"
+      path: "terminology/"
+      description: "术语规范表：强制统一/灵活处理 分级"
+    - name: "style_manual"
+      path: "style/"
+      description: "风格执行手册：五维量化规则+参考例句"
+    - name: "reference_corpus"
+      path: "reference/"
+      description: "参考译本库：已有公开译本对照基准"
+
+# ─── 输出配置 ───
+output:
+  formats: ["markdown", "docx", "pdf"]
+  include_metadata: true
+  include_diff: true  # 保留全链路版本对比
