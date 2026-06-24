@@ -262,7 +262,7 @@ MAATS（Multi-Agent Translation System）是2025年发表在arXiv上的多智能
 
 本项目为开源工程，完整代码已推送至GitHub：
 
-📍 **https://github.com/Toffyhu/lingxi-cloud-transfer/tree/main/translation-pipeline**
+📍 **https://github.com/Toffyhu/multi-agent-translator**
 
 包含内容：7个Agent源码 / 完整提示词 / 三版融合流水线 / 共享知识库（含风格适配指南）/ 一键翻译脚本 / 系统架构文档 / 部署指南
 
