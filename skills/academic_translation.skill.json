@@ -1,10 +1,11 @@
 {
   "skill_name": "academic-translation",
-  "version": "1.0",
+  "version": "2.0",
   "generated_at": "2026-06-27 13:01:17",
   "source": "IMA知识库「机器学习与神经网络」+ 术语风格师 AI/ML 术语萃取",
   "agents_contributing": [
-    "术语风格师 (term_stylist)"
+    "术语风格师 (term_stylist)",
+    "主编终审 (chief_editor)"
   ],
   "target_agents": [
     "术语风格师",
@@ -224,6 +225,156 @@
         "zh": "边界框",
         "note": "BBox"
       }
+    },
+    "PyTorch生态与框架核心": {
+      "autograd": {
+        "zh": "自动求导系统",
+        "note": "PyTorch核心引擎，基于动态计算图（Dynamo）自动追踪张量操作并反向传播梯度，替代传统手动推导。"
+      },
+      "nn.Module": {
+        "zh": "神经网络模块基类",
+        "note": "PyTorch中定义网络层或完整模型的父类，负责注册参数、管理前向逻辑、支持序列化（save/load）及设备迁移（to()）。"
+      },
+      "DataLoader": {
+        "zh": "数据加载器",
+        "note": "封装Dataset，提供批量迭代、随机打乱（shuffle）、多进程预取（num_workers）及内存映射功能，解决I/O瓶颈。"
+      },
+      "Tensor": {
+        "zh": "张量",
+        "note": "多维数组数据结构，支持GPU硬件加速与自动求导标记（requires_grad），是PyTorch所有数值运算与模型状态的底层载体。"
+      },
+      "Gradient Clipping": {
+        "zh": "梯度裁剪",
+        "note": "限制梯度范数最大值的技术，常用于RNN或极深网络，防止反向传播中的梯度爆炸导致训练发散。"
+      },
+      "Checkpoint": {
+        "zh": "检查点",
+        "note": "保存模型权重（state_dict）、优化器状态及训练步数的快照文件，用于断点续训、模型回滚或最佳权重提取。"
+      }
+    },
+    "训练过程与超参数调度": {
+      "Epoch": {
+        "zh": "训练轮次",
+        "note": "指整个训练数据集被完整遍历一次的过程。1个Epoch包含多个Iteration和Batch。"
+      },
+      "Batch": {
+        "zh": "批次 / 批处理单元",
+        "note": "单次前向/反向传播所处理的数据子集。Batch Size决定显存占用、梯度估计方差及并行计算效率。"
+      },
+      "Iteration": {
+        "zh": "迭代次数",
+        "note": "模型权重更新一次的计数。单轮Epoch内的Iteration数 = 总样本数 / Batch Size。三者关系：1 Epoch = N Iterations = M Batches。极易混淆点：Batch是数据切片概念，Iteration是优化器step计数概念。"
+      },
+      "Learning Rate Scheduler": {
+        "zh": "学习率调度器",
+        "note": "按策略动态调整学习率的组件（如StepLR, CosineAnnealing），以平衡训练初期的收敛速度与后期的精细搜索。"
+      },
+      "Warmup": {
+        "zh": "学习率预热",
+        "note": "训练初期将LR从0线性或余弦增长至目标值，避免初始大梯度破坏预训练权重或导致损失震荡。"
+      },
+      "Early Stopping": {
+        "zh": "早停法",
+        "note": "监控验证集指标，当连续N个Epoch未改善时提前终止训练，防止过拟合并节省算力。"
+      },
+      "Validation Loop": {
+        "zh": "验证循环",
+        "note": "训练过程中定期执行的前向推理阶段（eval模式），不计算梯度，用于评估泛化能力、触发Checkpoints及调整超参。"
+      }
+    },
+    "注意力机制家族": {
+      "Self-Attention": {
+        "zh": "自注意力机制",
+        "note": "序列内部元素间计算相关性，Query/Key/Value均来源于同一输入序列，捕捉长距离依赖。"
+      },
+      "Cross-Attention": {
+        "zh": "交叉注意力机制",
+        "note": "跨序列信息交互，通常Query来自解码器/当前模态，Key/Value来自编码器/另一模态（如图文对齐、语音识别）。"
+      },
+      "Multi-Head Attention": {
+        "zh": "多头注意力机制",
+        "note": "并行运行多个独立注意力头，捕获不同子空间的特征表示，最后拼接并线性投影，增强模型表达能力。"
+      },
+      "Flash Attention": {
+        "zh": "闪速注意力 / 高效注意力算法",
+        "note": "基于IO感知的算法优化，利用GPU片上SRAM减少HBM读写次数，实现O(N)显存复杂度与2-4倍端到端加速。"
+      },
+      "Sparse Attention": {
+        "zh": "稀疏注意力",
+        "note": "限制注意力窗口（如Local/Sliding Window）或特定模式，打破二次方复杂度，适用于超长序列建模。"
+      },
+      "QKV Projection": {
+        "zh": "查询/键/值投影",
+        "note": "通过可学习线性层将输入映射为Query, Key, Value向量，是注意力计算的前置步骤，决定信息检索的语义空间。"
+      },
+      "Attention Mask": {
+        "zh": "注意力掩码",
+        "note": "布尔矩阵或浮点偏置，用于屏蔽无效位置（如Padding）或强制因果性（Decoder-only Transformer的 causal mask）。"
+      }
+    },
+    "生成模型与概率建模": {
+      "Variational Autoencoder (VAE)": {
+        "zh": "变分自编码器",
+        "note": "基于变分推断的生成模型，通过KL散度约束潜在空间服从标准正态分布，实现连续隐变量的采样与可控重构。"
+      },
+      "Normalizing Flow": {
+        "zh": "归一化流",
+        "note": "利用一系列可逆且雅可比行列式易计算的变换，将复杂数据分布映射为标准先验分布，支持精确似然计算与快速采样。"
+      },
+      "Score-based Model": {
+        "zh": "基于分数的模型",
+        "note": "直接学习数据分布的梯度场（得分函数 ∇log p(x)），是扩散模型的核心数学基础，无需显式密度估计。"
+      },
+      "Forward Process": {
+        "zh": "前向加噪过程",
+        "note": "扩散模型逐步添加高斯噪声直至数据变为纯噪声的马尔可夫链，固定且无需训练。"
+      },
+      "Reverse Process / Denoising": {
+        "zh": "反向去噪过程",
+        "note": "训练好的神经网络预测噪声并从纯高斯分布逐步恢复出真实数据的生成路径，即实际采样阶段。"
+      },
+      "Latent Space": {
+        "zh": "潜在空间 / 隐变量空间",
+        "note": "生成模型压缩数据后的高维连续流形，在此空间进行插值、编辑或导航可保持语义一致性与平滑过渡。"
+      },
+      "Classifier-Free Guidance": {
+        "zh": "无分类器引导",
+        "note": "扩散模型常用技巧，通过条件与无条件预测的加权差增强生成质量与多样性，无需额外训练分类器分支。"
+      }
+    },
+    "模型压缩与部署推理": {
+      "Quantization": {
+        "zh": "量化",
+        "note": "将FP32权重/激活映射至低精度（如INT8/FP16），显著降低显存带宽需求与计算延迟。部署前需校准（Calibration）确定截断阈值。"
+      },
+      "Pruning": {
+        "zh": "剪枝",
+        "note": "移除网络中冗余或不重要的连接/神经元（结构化或非结构化），大幅降低参数量，通常需配合微调（Fine-tuning）恢复精度。"
+      },
+      "Knowledge Distillation": {
+        "zh": "知识蒸馏",
+        "note": "教师模型（Teacher）通过软标签（Softmax输出温度缩放）或中间特征指导学生模型（Student）训练，实现模型轻量化与性能迁移。"
+      },
+      "ONNX": {
+        "zh": "开放神经网络交换格式",
+        "note": "跨框架模型互操作标准，支持算子级转换与元数据保留，便于在TensorRT/OpenVINO/TFLite等异构推理引擎中部署。"
+      },
+      "TensorRT": {
+        "zh": "NVIDIA TensorRT推理优化器",
+        "note": "针对NVIDIA GPU的高性能深度学习推理SDK，含静态图优化、算子融合、内核自动调优（CUTLASS/CUDA）及INT8量化支持。"
+      },
+      "Kernel Fusion": {
+        "zh": "算子融合",
+        "note": "将多个离散算子合并为单一CUDA Kernel执行，消除中间结果写回全局显存的开销，显著提升吞吐率与能效比。"
+      },
+      "Graph Optimization": {
+        "zh": "计算图优化",
+        "note": "静态图分析技术，包括常量折叠、死代码消除、节点合并与内存复用，用于提升推理效率并降低延迟。"
+      },
+      "Dynamic Shape Support": {
+        "zh": "动态形状支持",
+        "note": "推理引擎处理可变输入维度（如不同分辨率图像/不同长度文本）的能力，需结合Profile构建Execution Provider以缓存最优内核。"
+      }
     }
   },
   "paper_structure_terms": {
@@ -324,5 +475,182 @@
     "Acknowledgments": "致谢",
     "References": "参考文献",
     "Appendix / Supplementary Material": "附录 / 补充材料"
-  }
+  },
+  "updated_at": "2026-06-27 13:28:28",
+  "changelog": [
+    "v2.0: 术语风格师深化术语(补充PyTorch/训练/注意力/部署)",
+    "v2.0: 主编终审制定12+审校规则和质量标准"
+  ],
+  "academic_defect_rules": [
+    {
+      "name": "行内公式未保护",
+      "target": "LaTeX Inline Math",
+      "severity": "Critical",
+      "method": "Regex",
+      "pattern": "\\$[^\\$\\n]+\\$"
+    },
+    {
+      "name": "块级公式未保护",
+      "target": "LaTeX Block Math",
+      "severity": "Critical",
+      "method": "Regex",
+      "pattern": "\\$\\$[^\\$]+\\$\\$"
+    },
+    {
+      "name": "算法伪代码变量被翻译",
+      "target": "Algorithm Pseudocode",
+      "severity": "High",
+      "method": "AST",
+      "pattern": "Algorithm\\s+\\d+[\\s\\S]*?(?=\\n\\n|\\Z)"
+    },
+    {
+      "name": "引用编号遗漏或错位",
+      "target": "Citation References",
+      "severity": "Critical",
+      "method": "Regex",
+      "pattern": "\\[\\d+(?:,\\s*\\d+)*\\]"
+    },
+    {
+      "name": "图表交叉引用编号不匹配",
+      "target": "Figure/Table Cross-reference",
+      "severity": "High",
+      "method": "Regex",
+      "pattern": "(?:Figure|Table|图|表)\\s*\\d+"
+    },
+    {
+      "name": "缩略语首次出现未展开",
+      "target": "Acronym Expansion",
+      "severity": "Medium",
+      "method": "NLP",
+      "pattern": "\\b[A-Z]{2,}\\b"
+    },
+    {
+      "name": "核心术语翻译不一致",
+      "target": "Terminology Consistency",
+      "severity": "High",
+      "method": "Dictionary",
+      "pattern": "(?i)(attention|convolution|backpropagation|ablation|autograd)"
+    },
+    {
+      "name": "数据精度与指标单位丢失",
+      "target": "Metrics and Units",
+      "severity": "Critical",
+      "method": "Regex",
+      "pattern": "\\d+\\.\\d+%|\\d+\\.\\d+\\s*(?:ms|GB|MB|FLOPs)"
+    },
+    {
+      "name": "SOTA误译检测",
+      "target": "state-of-the-art",
+      "severity": "Medium",
+      "method": "Dictionary",
+      "pattern": "(?i)state-of-the-art|SOTA"
+    },
+    {
+      "name": "Baseline误译检测",
+      "target": "baseline",
+      "severity": "Medium",
+      "method": "Dictionary",
+      "pattern": "(?i)baseline"
+    },
+    {
+      "name": "Novel误译检测",
+      "target": "novel",
+      "severity": "Low",
+      "method": "Dictionary",
+      "pattern": "(?i)novel"
+    },
+    {
+      "name": "Ablation study误译检测",
+      "target": "ablation study",
+      "severity": "Medium",
+      "method": "Dictionary",
+      "pattern": "(?i)ablation study"
+    },
+    {
+      "name": "Autograd/自动求导误译检测",
+      "target": "Autograd",
+      "severity": "High",
+      "method": "Dictionary",
+      "pattern": "(?i)autograd|automatic differentiation"
+    }
+  ],
+  "academic_quality_checklist": {
+    "must_pass": [
+      "所有 $ 和 $$ 包裹的LaTeX公式内容（包括数学符号、张量维度如 $\\mathbb{R}^{d \\times k}$）未被翻译或修改，保持原貌。",
+      "所有引用编号（如 [1], [2, 3]）完整保留，无遗漏、无错位、无多余空格，且与参考文献列表严格对应。",
+      "所有实验数据、百分比、小数点及单位（如 95.4%, 1.2e-4, FLOPs）精度完全一致，无四舍五入错误或单位遗漏。",
+      "算法伪代码（Algorithm 1/2 等）中的变量名、函数名、控制流关键字（如 for, if, return）保留英文原貌，未被翻译。",
+      "图表交叉引用（Figure X / Table Y）的中英文编号严格对应，无错号、漏号，且图表标题翻译准确。",
+      "核心数学符号与逻辑运算符（如 $\\sum$, $\\nabla$, $\\propto$）未被破坏或错误转换为纯文本字符。"
+    ],
+    "should_pass": [
+      "缩略语（如 CNN, GAT, LSTM, GAN）在正文首次出现时提供中英文全称及缩写，后续使用统一缩写。",
+      "专业术语（如“注意力机制”、“反向传播”、“消融实验”、“损失函数”）在全文中翻译一致，符合机器学习领域规范。",
+      "避免将 state-of-the-art 直译为“最新技术的”等生硬表达，统一译为“最先进的”或“当前最优的”。",
+      "避免将 novel 误译为“小说”，在论文语境中应译为“新颖的”或“提出的”。",
+      "句子结构符合中文学术论文表达习惯，避免明显的机翻腔调（如过多的“被”字句、长定语不拆分）。"
+    ]
+  },
+  "common_mistranslations": [
+    {
+      "en": "state-of-the-art",
+      "wrong": "最新技术的 / 国家的先进技术",
+      "correct": "最先进的 / 当前最优的 (SOTA)",
+      "context": "We achieve state-of-the-art performance on the ImageNet dataset."
+    },
+    {
+      "en": "baseline",
+      "wrong": "基础线 / 底线 / 基线",
+      "correct": "基线模型 / 基线方法",
+      "context": "Compared with the baseline, our proposed CNN improves accuracy by 2%."
+    },
+    {
+      "en": "novel",
+      "wrong": "小说 / 新颖的(作名词)",
+      "correct": "新颖的 / 提出的",
+      "context": "We propose a novel graph attention network (GAT) for node classification."
+    },
+    {
+      "en": "ablation study",
+      "wrong": "切除研究 / 烧蚀研究 / 消融研究",
+      "correct": "消融实验",
+      "context": "We conduct ablation studies to verify the effectiveness of each module in nn.Module."
+    },
+    {
+      "en": "autograd / automatic differentiation",
+      "wrong": "自动分级 / 自动微分",
+      "correct": "自动求导",
+      "context": "PyTorch's Autograd engine tracks operations for automatic differentiation during the training loop."
+    },
+    {
+      "en": "backpropagation",
+      "wrong": "后向传播 / 反向传播(不统一)",
+      "correct": "反向传播",
+      "context": "Backpropagation is used to compute gradients for the optimizer."
+    },
+    {
+      "en": "adversarial",
+      "wrong": "敌对的 / 对抗的(日常语境)",
+      "correct": "对抗的(特指GAN语境)",
+      "context": "The adversarial loss drives the generator to produce realistic images in GANs."
+    },
+    {
+      "en": "loss function",
+      "wrong": "损失功能 / 损耗函数",
+      "correct": "损失函数",
+      "context": "Cross-entropy is a common loss function for classification tasks."
+    },
+    {
+      "en": "convolution",
+      "wrong": "卷起 / 卷积(未区分语境)",
+      "correct": "卷积(特指CNN中的卷积操作)",
+      "context": "The convolution layer extracts spatial features from the input image."
+    },
+    {
+      "en": "sequence modeling",
+      "wrong": "序列建模 / 顺序建模",
+      "correct": "序列建模",
+      "context": "RNN and LSTM are widely used for sequence modeling tasks like machine translation."
+    }
+  ]
 }
