@@ -111,6 +111,17 @@ class TranslationPipeline:
                     self.assets.load_legal_knowledge(path)
                     self.tracker.log("init", f"已加载法律翻译知识: {candidate}")
                     break
+        elif self.mode.value == "academic":
+            import os
+            for candidate in [
+                "skills/academic_translation.skill.json",
+                "skills/academic_translation_knowledge.md",
+            ]:
+                path = os.path.join(os.path.dirname(assets_dir), candidate)
+                if os.path.exists(path):
+                    self.assets.load_academic_knowledge(path)
+                    self.tracker.log("init", f"已加载学术翻译知识: {candidate}")
+                    break
 
         self._book_analyzer: Optional[BookAnalyzerAgent] = None
         self._term_stylist: Optional[TermStylistAgent] = None

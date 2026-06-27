@@ -121,7 +121,7 @@ class BaseAgent(ABC):
 ## 📚 共享翻译技能知识（所有Agent必须遵循）
 {knowledge_block}"""
 
-        # 按模式注入专属知识（如法律模式注入法律翻译术语+规则）
+        # 按模式注入专属知识
         if self.mode and self.mode.value == "legal":
             legal_block = self.assets.get_legal_knowledge_block()
             if legal_block:
@@ -129,6 +129,13 @@ class BaseAgent(ABC):
 
 ## ⚖️ 法律翻译专业技能知识（法律模式强制遵循）
 {legal_block}"""
+        elif self.mode and self.mode.value == "academic":
+            academic_block = self.assets.get_academic_knowledge_block()
+            if academic_block:
+                system_prompt = f"""{system_prompt}
+
+## 🎓 学术翻译专业技能知识（学术模式强制遵循）
+{academic_block}"""
 
         client, model_key, spec = self.get_client(scenario)
 

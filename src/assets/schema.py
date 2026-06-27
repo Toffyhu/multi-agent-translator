@@ -172,7 +172,8 @@ class AssetStore:
         self.terminology: Optional[TerminologyTable] = None
         self.style_manual: Optional[StyleManual] = None
         self.shared_knowledge: Optional[SharedKnowledge] = None
-        self.legal_knowledge_text: Optional[str] = None  # 法律模式专属知识（从skill.json/md加载）
+        self.legal_knowledge_text: Optional[str] = None  # 法律模式专属知识
+        self.academic_knowledge_text: Optional[str] = None  # 学术模式专属知识
         self._initialized = True
 
     def _ensure_dirs(self):
@@ -285,33 +286,83 @@ class AssetStore:
     # ─── 法律模式专属知识加载 ───
 
     def load_legal_knowledge(self, md_path: str):
-        """加载法律翻译专业知识（从 Markdown 或 JSON 文件）"""
+        """加载法律翻译专业知识"""
+        ...
+        # (已有实现，不变)
+        self.legal_knowledge_text = self._load_knowledge_text(md_path)
+
+    def get_legal_knowledge_block(self) -> str:
+        """获取法律翻译专属知识块"""
+        return self.legal_knowledge_text or ""
+
+    def load_academic_knowledge(self, md_path: str):
+        """加载学术翻译专业知识"""
+        self.academic_knowledge_text = self._load_knowledge_text(md_path)
+
+    def get_academic_knowledge_block(self) -> str:
+        """获取学术翻译专属知识块"""
+        return self.academic_knowledge_text or ""
+
+    def _load_knowledge_text(self, md_path: str) -> str:
+        """通用知识文件加载（JSON→Markdown文本）"""
         import json
         from pathlib import Path
         path = Path(md_path)
         if not path.exists():
-            return
+            return ""
         text = path.read_text(encoding="utf-8")
-        # 如果是 JSON 技能文件，提取关键信息转为 Markdown
         if md_path.endswith('.json'):
             try:
                 data = json.loads(text)
                 lines = []
-                t = data.get("terminology", {})
-                for cat_name, items in t.items():
-                    if isinstance(items, dict):
-                        lines.append(f"### {cat_name}")
-                        for k, v in items.items():
-                            if isinstance(v, dict):
-                                zh = v.get("译法", "")
-                                desc = v.get("说明", "")
-                                lines.append(f"- {k} → {zh} | {desc}")
-                            elif isinstance(v, str):
-                                lines.append(f"- {k} → {v}")
-                        lines.append("")
+                # 术语表
+                for section in ["terminology", "ai_ml_terminology"]:
+                    t = data.get(section, {})
+                    for cat_name, items in t.items():
+                        if isinstance(items, dict):
+                            lines.append(f"### {cat_name}")
+                            for k, v in items.items():
+                                if isinstance(v, dict):
+                                    zh = v.get("zh", v.get("译法", ""))
+                                    desc = v.get("note", v.get("说明", ""))
+                                    lines.append(f"- {v.get('en', k)} → {zh} | {desc}")
+                                elif isinstance(v, str):
+                                    lines.append(f"- {k} → {v}")
+                            lines.append("")
+                # 通用规则
+                for rule_key in ["general_academic_rules"]:
+                    rules = data.get(rule_key, {})
+                    for cat, items in rules.items():
+                        if isinstance(items, list):
+                            lines.append(f"### {cat}")
+                            for it in items:
+                                lines.append(f"- {it}")
+                            lines.append("")
+                # 论文结构
+                mapping = data.get("paper_structure_mapping", {})
+                if mapping:
+                    lines.append("### 论文结构标准译法")
+                    for en, cn in mapping.items():
+                        lines.append(f"- {en} → {cn}")
+                    lines.append("")
+                # 学术规范
+                convs = data.get("academic_writing_conventions", [])
+                if convs:
+                    lines.append("### 学术写作规范")
+                    for c in convs:
+                        lines.append(f"- {c}")
+                    lines.append("")
+                # 常见错误
+                pits = data.get("common_translation_pitfalls", [])
+                if pits:
+                    lines.append("### 常见翻译错误")
+                    for p in pits:
+                        lines.append(f"- {p}")
+                    lines.append("")
+                # 缺陷规则
                 rules = data.get("defect_rules", [])
                 if rules:
-                    lines.append("### 法律翻译缺陷检测规则")
+                    lines.append("### 翻译缺陷检测规则")
                     for r in rules:
                         if isinstance(r, dict):
                             lines.append(f"- [{r.get('severity','')}] {r.get('name','')}: {r.get('target','')}")
@@ -324,14 +375,14 @@ class AssetStore:
                         for it in items:
                             lines.append(f"- {it}")
                         lines.append("")
-                text = "\n".join(lines)
+                return "\n".join(lines)
             except:
                 pass
-        self.legal_knowledge_text = text
+        return text
 
-    def get_legal_knowledge_block(self) -> str:
-        """获取法律翻译专属知识块（法律模式Agent自动注入）"""
-        return self.legal_knowledge_text or ""
+    # 保留旧 load_legal_knowledge 兼容性
+    def load_legal_knowledge(self, md_path: str):
+        self.legal_knowledge_text = self._load_knowledge_text(md_path)
 
     # ─── 加载已持久化的资产 ───
 

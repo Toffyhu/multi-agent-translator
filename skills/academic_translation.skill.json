@@ -1,0 +1,328 @@
+{
+  "skill_name": "academic-translation",
+  "version": "1.0",
+  "generated_at": "2026-06-27 13:01:17",
+  "source": "IMA知识库「机器学习与神经网络」+ 术语风格师 AI/ML 术语萃取",
+  "agents_contributing": [
+    "术语风格师 (term_stylist)"
+  ],
+  "target_agents": [
+    "术语风格师",
+    "主编终审",
+    "章节译者",
+    "事实核查"
+  ],
+  "mode": "academic",
+  "primary_domain": "AI/ML/CS (人工智能/机器学习/计算机科学)",
+  "extensible_note": "通用学术框架不变，其他领域可替换术语表+风格规范即可复用",
+  "general_academic_rules": {
+    "引用保护": [
+      "参考文献编号 [N] / (Author, Year) 不得修改、遗漏或错位",
+      "公式编号 (1)(2) 必须与原文一致",
+      "图表编号 Figure X / Table Y 必须保留并正确对应",
+      "引用的论文标题如原文为英文，可保留英文或加中文翻译，但不能只翻不标原文"
+    ],
+    "公式与数据保护": [
+      "数学公式、LaTeX 表达式不得翻译或修改",
+      "统计数据（百分比、p值、置信区间）字符级精确对应",
+      "算法伪代码中的变量名、函数名保留英文"
+    ],
+    "论证完整性": [
+      "前提→推论→结论的逻辑链不可断裂",
+      "因果/对比/转折关系词（therefore/however/whereas）必须准确传达",
+      "长篇论证拆分时不可改变逻辑结构"
+    ],
+    "学术规范": [
+      "中文学术论文使用中文标点，英文术语后的标点跟随中文规范",
+      "首次出现的英文缩写必须在括号中标注全称",
+      "数字表达遵循中文习惯（万/亿而非 million/billion）",
+      "图表标题翻译后保留原编号"
+    ]
+  },
+  "ai_ml_terminology": {
+    "神经网络与架构": {
+      "transformer": {
+        "en": "Transformer",
+        "zh": "Transformer",
+        "note": "首字母大写，主流论文保留英文不翻译"
+      },
+      "convolutional neural network": {
+        "en": "CNN",
+        "zh": "卷积神经网络",
+        "note": "首次出现建议标注缩写"
+      },
+      "recurrent neural network": {
+        "en": "RNN",
+        "zh": "循环神经网络",
+        "note": ""
+      },
+      "long short-term memory": {
+        "en": "LSTM",
+        "zh": "长短期记忆网络",
+        "note": ""
+      },
+      "generative adversarial network": {
+        "en": "GAN",
+        "zh": "生成对抗网络",
+        "note": ""
+      },
+      "vision transformer": {
+        "en": "ViT",
+        "zh": "视觉Transformer",
+        "note": "架构名保留英文，中文语境常直译+保留原名"
+      },
+      "residual network": {
+        "en": "ResNet",
+        "zh": "残差网络",
+        "note": "模型名称统一保留英文缩写/原名"
+      },
+      "autoencoder": {
+        "en": "AE",
+        "zh": "自编码器",
+        "note": ""
+      },
+      "graph neural network": {
+        "en": "GNN",
+        "zh": "图神经网络",
+        "note": ""
+      },
+      "diffusion model": {
+        "en": "Diffusion Model",
+        "zh": "扩散模型",
+        "note": "近年通用译法"
+      }
+    },
+    "训练与优化": {
+      "gradient descent": {
+        "en": "Gradient Descent",
+        "zh": "梯度下降",
+        "note": ""
+      },
+      "backpropagation": {
+        "en": "Backpropagation",
+        "zh": "反向传播",
+        "note": ""
+      },
+      "fine-tuning": {
+        "en": "Fine-Tuning",
+        "zh": "微调",
+        "note": "深度学习语境下固定译法；若指代码/配置级调整应译为‘细调’或‘参数适配’"
+      },
+      "epoch": {
+        "en": "Epoch",
+        "zh": "轮次",
+        "note": "指完整数据集遍历一次"
+      },
+      "batch size": {
+        "en": "Batch Size",
+        "zh": "批次大小",
+        "note": "简称‘批大小’"
+      },
+      "learning rate": {
+        "en": "Learning Rate",
+        "zh": "学习率",
+        "note": ""
+      },
+      "loss function": {
+        "en": "Loss Function",
+        "zh": "损失函数",
+        "note": "也称代价函数(Cost Function)"
+      },
+      "regularization": {
+        "en": "Regularization",
+        "zh": "正则化",
+        "note": "防止过拟合技术统称"
+      }
+    },
+    "评估与指标": {
+      "accuracy": {
+        "en": "Accuracy",
+        "zh": "准确率",
+        "note": "注意与Precision区分"
+      },
+      "precision": {
+        "en": "Precision",
+        "zh": "精确率",
+        "note": "也称查准率"
+      },
+      "recall": {
+        "en": "Recall",
+        "zh": "召回率",
+        "note": "也称查全率"
+      },
+      "f1 score": {
+        "en": "F1 Score",
+        "zh": "F1分数",
+        "note": "精确率与召回率的调和平均"
+      },
+      "bleu": {
+        "en": "BLEU",
+        "zh": "BLEU",
+        "note": "机器翻译评估指标，通常保留大写英文"
+      },
+      "perplexity": {
+        "en": "Perplexity",
+        "zh": "困惑度",
+        "note": "语言模型评估指标"
+      }
+    },
+    "NLP术语": {
+      "tokenization": {
+        "en": "Tokenization",
+        "zh": "分词",
+        "note": "中文语境常称‘切词’或‘标记化’"
+      },
+      "embedding": {
+        "en": "Embedding",
+        "zh": "嵌入",
+        "note": "词向量/特征表示"
+      },
+      "language modeling": {
+        "en": "Language Modeling",
+        "zh": "语言建模",
+        "note": ""
+      },
+      "machine translation": {
+        "en": "Machine Translation",
+        "zh": "机器翻译",
+        "note": "MT"
+      },
+      "named entity recognition": {
+        "en": "Named Entity Recognition",
+        "zh": "命名实体识别",
+        "note": "NER"
+      },
+      "attention mask": {
+        "en": "Attention Mask",
+        "zh": "注意力掩码",
+        "note": ""
+      }
+    },
+    "CV术语": {
+      "object detection": {
+        "en": "Object Detection",
+        "zh": "目标检测",
+        "note": ""
+      },
+      "semantic segmentation": {
+        "en": "Semantic Segmentation",
+        "zh": "语义分割",
+        "note": ""
+      },
+      "instance segmentation": {
+        "en": "Instance Segmentation",
+        "zh": "实例分割",
+        "note": ""
+      },
+      "data augmentation": {
+        "en": "Data Augmentation",
+        "zh": "数据增强",
+        "note": ""
+      },
+      "bounding box": {
+        "en": "Bounding Box",
+        "zh": "边界框",
+        "note": "BBox"
+      }
+    }
+  },
+  "paper_structure_terms": {
+    "标题与章节": {
+      "abstract": {
+        "zh": "摘要",
+        "note": "需独立成段，含目的、方法、结果、结论"
+      },
+      "introduction": {
+        "zh": "引言",
+        "note": "涵盖研究背景、动机与贡献"
+      },
+      "related work": {
+        "zh": "相关工作",
+        "note": "也称文献综述"
+      },
+      "method": {
+        "zh": "方法",
+        "note": "也称方法论/算法设计"
+      },
+      "experiments": {
+        "zh": "实验",
+        "note": "含设置、结果与分析"
+      },
+      "conclusion": {
+        "zh": "结论",
+        "note": "总结全文并指出局限与未来工作"
+      }
+    },
+    "方法论常用词": {
+      "propose": {
+        "zh": "提出",
+        "note": "避免使用‘发明’或‘创造’"
+      },
+      "demonstrate": {
+        "zh": "证明/展示",
+        "note": "多用于实验验证场景"
+      },
+      "achieve state-of-the-art": {
+        "zh": "达到最先进水平",
+        "note": "SOTA的规范译法"
+      },
+      "ablation study": {
+        "zh": "消融实验",
+        "note": "验证模块有效性"
+      }
+    },
+    "结果分析词汇": {
+      "significantly outperforms": {
+        "zh": "显著优于",
+        "note": "需配合统计检验说明"
+      },
+      "comparable to": {
+        "zh": "与...相当",
+        "note": "性能接近时的客观表述"
+      },
+      "computational overhead": {
+        "zh": "计算开销",
+        "note": "含时间/内存成本"
+      },
+      "generalization capability": {
+        "zh": "泛化能力",
+        "note": "跨分布表现"
+      }
+    }
+  },
+  "academic_writing_conventions": [
+    "专业术语首次出现时应采用“中文译名（英文原名）”格式，后续统一使用中文或约定缩写。",
+    "数学公式中的变量必须使用斜体（如 $x$, $\theta$），常量、函数名及单位使用正体（如 $\tan$, $\text{kg}$）。",
+    "图表编号采用“图1”、“表2”格式，引用时写为“如图1所示”而非“见图1”。",
+    "数值范围使用连接号“~”或“至”，如“5~10 epochs”，禁止使用连字符“-”表示范围。",
+    "引用文献采用顺序编码制，上标标注于句末标点前，如“已有研究表明[1]。”",
+    "算法伪代码中的步骤、条件判断需保持动词原形或动名词开头，中文对应使用“计算”、“更新”、“判断”等规范动词。",
+    "单位符号与数值之间留半角空格（如 32 GB, 5 ms），复合单位遵循国际单位制规范。",
+    "避免主观夸大表述，如将“perfect results”译为“完美结果”，应客观译为“理想效果”或“基准水平”。"
+  ],
+  "common_translation_pitfalls": [
+    "混淆“Accuracy”与“Precision”：前者为整体正确率，后者为预测为正类中真正为正类的比例，不可互换。",
+    "误译“Fine-tuning”：在深度学习语境下固定译为“微调”，若指代码逻辑调整应译为“参数适配”或“工程调优”。",
+    "滥用“Learning”一词：如“Deep Learning”标准译名为“深度学习”，而非“深度学”或“机器学习”的简单叠加。",
+    "忽略“State-of-the-Art (SOTA)”语境：应译为“当前最优/最先进水平”，避免直译为“艺术巅峰”或“最新技术”。",
+    "错误处理“Zero-shot/Few-shot”：分别译为“零样本/少样本学习”，不可按字面译为“零学习/少学习”。",
+    "混淆“Loss”与“Cost”：在优化理论中Loss指代具体任务的误差函数，Cost多指系统总开销或经济成本，需依上下文区分。",
+    "误译“Backbone”：在CV/NLP中均译为“主干网络”，指提取核心特征的底层结构，非“背部”或“支柱”。"
+  ],
+  "paper_structure_mapping": {
+    "Abstract": "摘要",
+    "Introduction": "引言",
+    "Related Work": "相关工作",
+    "Background": "背景",
+    "Preliminaries": "预备知识",
+    "Methodology / Method / Approach": "方法",
+    "Experiments / Experimental Setup": "实验",
+    "Results / Results and Analysis": "结果与分析",
+    "Ablation Study": "消融实验",
+    "Discussion": "讨论",
+    "Conclusion / Concluding Remarks": "结论",
+    "Acknowledgments": "致谢",
+    "References": "参考文献",
+    "Appendix / Supplementary Material": "附录 / 补充材料"
+  }
+}
