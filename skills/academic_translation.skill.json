@@ -1,8 +1,8 @@
 {
   "skill_name": "academic-translation",
-  "version": "2.0",
+  "version": "3.0",
   "generated_at": "2026-06-27 13:01:17",
-  "source": "IMA知识库「机器学习与神经网络」+ 术语风格师 AI/ML 术语萃取",
+  "source": "IMA知识库「机器学习与神经网络」+ 术语风格师 AI/ML 术语萃取 + 4个AI论文知识库(经典AI论文/AI论文最新精选/AI论文/AI论文撰写)",
   "agents_contributing": [
     "术语风格师 (term_stylist)",
     "主编终审 (chief_editor)"
@@ -375,6 +375,182 @@
         "zh": "动态形状支持",
         "note": "推理引擎处理可变输入维度（如不同分辨率图像/不同长度文本）的能力，需结合Profile构建Execution Provider以缓存最优内核。"
       }
+    },
+    "LLM核心": {
+      "large language model": {
+        "zh": "大语言模型",
+        "note": "通常缩写为LLM，早期文献中也常与foundation model混用"
+      },
+      "foundation model": {
+        "zh": "基础模型",
+        "note": "强调跨任务泛化与自监督预训练范式，区别于传统专用模型"
+      },
+      "emergent ability": {
+        "zh": "涌现能力",
+        "note": "指随参数量/算力跨越阈值后突然出现的非线性能力，非简单线性叠加"
+      },
+      "scaling law": {
+        "zh": "缩放定律",
+        "note": "描述模型规模、数据量、计算量与性能之间的幂律/对数线性关系"
+      },
+      "in-context learning": {
+        "zh": "上下文学习",
+        "note": "无需更新模型参数，仅通过在prompt中提供示例即可实现任务适配"
+      }
+    },
+    "RAG与检索增强": {
+      "retrieval-augmented generation": {
+        "zh": "检索增强生成",
+        "note": "结合外部知识库与生成模型的核心架构，旨在缓解幻觉与知识滞后"
+      },
+      "vector database": {
+        "zh": "向量数据库",
+        "note": "专门存储高维embedding并支持近似最近邻(ANN)搜索的存储系统"
+      },
+      "chunking": {
+        "zh": "文本分块/切块",
+        "note": "RAG预处理关键步骤，需权衡上下文完整性与检索召回率"
+      },
+      "reranking": {
+        "zh": "重排序/二次排序",
+        "note": "通常使用Cross-Encoder对初筛候选集进行精细打分与排序"
+      },
+      "grounding": {
+        "zh": "事实锚定/接地",
+        "note": "将生成内容与外部可信来源强绑定，提升可解释性与准确性"
+      }
+    },
+    "对齐与安全": {
+      "RLHF": {
+        "zh": "基于人类反馈的强化学习",
+        "note": "Reinforcement Learning from Human Feedback，大模型对齐的主流范式"
+      },
+      "DPO": {
+        "zh": "直接偏好优化",
+        "note": "Direct Preference Optimization，无需训练独立Reward Model的简化对齐算法"
+      },
+      "red teaming": {
+        "zh": "红队测试/对抗测试",
+        "note": "模拟恶意攻击者系统性挖掘模型漏洞的安全评估流程"
+      },
+      "jailbreak": {
+        "zh": "越狱/破解",
+        "note": "通过特殊提示词诱导模型绕过安全护栏与内容过滤的攻击手段"
+      },
+      "constitutional AI": {
+        "zh": "宪法AI",
+        "note": "利用预设规则集(Self-Correction)替代人工标注进行自我对齐的框架"
+      }
+    },
+    "高效微调": {
+      "LoRA": {
+        "zh": "低秩自适应",
+        "note": "Low-Rank Adaptation，冻结预训练权重，仅注入可训练的低秩分解矩阵"
+      },
+      "QLoRA": {
+        "zh": "量化低秩自适应",
+        "note": "结合4-bit NF4高精度量化与LoRA，大幅降低显存占用至单卡可训水平"
+      },
+      "PEFT": {
+        "zh": "参数高效微调",
+        "note": "Parameter-Efficient Fine-Tuning，统称为全量微调替代方案的家族技术"
+      },
+      "prefix tuning": {
+        "zh": "前缀微调",
+        "note": "在Transformer各层输入端附加可学习的连续向量前缀(Prefix)"
+      },
+      "prompt tuning": {
+        "zh": "提示微调",
+        "note": "仅优化虚拟Token的Embedding表示，不修改任何网络权重结构"
+      }
+    },
+    "推理与部署": {
+      "KV cache": {
+        "zh": "KV缓存/键值缓存",
+        "note": "复用历史Token的Key和Value矩阵，避免重复计算，显著提升自回归速度"
+      },
+      "speculative decoding": {
+        "zh": "投机解码",
+        "note": "利用轻量草稿模型生成候选序列，由大模型并行验证以加速推理"
+      },
+      "mixture of experts": {
+        "zh": "混合专家",
+        "note": "MoE架构，通过门控网络动态路由激活稀疏子网络，实现计算与参数解耦"
+      },
+      "MoE": {
+        "zh": "混合专家架构",
+        "note": "Mixture of Experts的缩写，核心优势在于推理时仅激活部分参数"
+      },
+      "continuous batching": {
+        "zh": "连续批处理",
+        "note": "动态调度不同长度请求的到达与结束，最大化GPU吞吐与显存利用率"
+      }
+    },
+    "多模态": {
+      "vision-language model": {
+        "zh": "视觉语言模型",
+        "note": "VLM，统一编码图文信息的端到端架构，支持跨模态理解与生成"
+      },
+      "CLIP": {
+        "zh": "对比语言-图像预训练",
+        "note": "Contrastive Language-Image Pre-training，多模态特征空间对齐的奠基性工作"
+      },
+      "text-to-image": {
+        "zh": "文生图",
+        "note": "Text-to-Image，基于扩散模型或自回归架构的图像生成任务"
+      },
+      "multimodal alignment": {
+        "zh": "多模态对齐",
+        "note": "将不同模态的特征映射至共享语义空间，实现跨模态检索与交互"
+      },
+      "cross-attention": {
+        "zh": "交叉注意力",
+        "note": "跨模态信息融合的核心机制，Query来自一模态，Key/Value来自另一模态"
+      }
+    },
+    "Agent与工具使用": {
+      "tool use": {
+        "zh": "工具调用/使用",
+        "note": "模型自主识别需求并调用外部API、代码解释器或数据库的能力"
+      },
+      "function calling": {
+        "zh": "函数调用",
+        "note": "结构化输出JSON格式参数以精确触发后端程序接口的协议"
+      },
+      "ReAct": {
+        "zh": "推理与行动",
+        "note": "Reasoning + Acting范式，Agent通过交替进行思维链推导与环境交互"
+      },
+      "agent": {
+        "zh": "智能体",
+        "note": "具备感知、规划、记忆、执行闭环的自主决策系统"
+      },
+      "multi-agent": {
+        "zh": "多智能体",
+        "note": "多个Agent通过协作、辩论或竞争机制完成复杂长程任务"
+      }
+    },
+    "评估基准": {
+      "MMLU": {
+        "zh": "大规模多任务语言理解",
+        "note": "Massive Multitask Language Understanding，覆盖57个学科的综合性评测"
+      },
+      "HumanEval": {
+        "zh": "人类编程能力测试集",
+        "note": "侧重Python代码生成质量，以单元测试通过率(Pass@k)为核心指标"
+      },
+      "GSM8K": {
+        "zh": "小学数学问题集",
+        "note": "Grade School Math 8K，衡量模型复杂数学推理与分步解题能力"
+      },
+      "benchmark": {
+        "zh": "基准测试",
+        "note": "标准化、可复现的评估体系，用于横向对比不同模型性能"
+      },
+      "leaderboard": {
+        "zh": "排行榜",
+        "note": "如Hugging Face Open LLM Leaderboard，实时追踪开源/闭源模型排名"
+      }
     }
   },
   "paper_structure_terms": {
@@ -476,10 +652,11 @@
     "References": "参考文献",
     "Appendix / Supplementary Material": "附录 / 补充材料"
   },
-  "updated_at": "2026-06-27 13:28:28",
+  "updated_at": "2026-06-27 14:41:51",
   "changelog": [
     "v2.0: 术语风格师深化术语(补充PyTorch/训练/注意力/部署)",
-    "v2.0: 主编终审制定12+审校规则和质量标准"
+    "v2.0: 主编终审制定12+审校规则和质量标准",
+    "v3.0: 新增4个AI论文知识库学习 → 前沿LLM术语+论文写作表达+审校规则+误译模式"
   ],
   "academic_defect_rules": [
     {
@@ -572,6 +749,62 @@
       "severity": "High",
       "method": "Dictionary",
       "pattern": "(?i)autograd|automatic differentiation"
+    },
+    {
+      "name": "LLM术语一致性检测",
+      "target": "同一论文中 LLM/大语言模型/大模型 三种写法的统一",
+      "severity": "high",
+      "method": "llm",
+      "pattern": ""
+    },
+    {
+      "name": "前沿缩略语首次全称标注检测",
+      "target": "RLHF/DPO/MoE/RAG/CoT/SFT 等首次出现需标注全称",
+      "severity": "high",
+      "method": "regex",
+      "pattern": "\\b(RLHF|DPO|MoE|RAG|CoT|SFT)\\b"
+    },
+    {
+      "name": "LaTeX公式与算法伪代码保护",
+      "target": "Algorithm 伪代码、数学公式不可翻译",
+      "severity": "critical",
+      "method": "regex",
+      "pattern": "(\\\\begin\\\\{(algorithm|equation|align)\\\\})|(\\$\\$.*?\\$\\$)|(\\$[^\\$]+?\\$)"
+    },
+    {
+      "name": "图表引用编号一致性检测",
+      "target": "Figure X/Table Y 编号检测及中英文对应",
+      "severity": "medium",
+      "method": "regex",
+      "pattern": "(Figure|Table|Fig\\.)\\s*\\d+"
+    },
+    {
+      "name": "实验指标数值字符级对应",
+      "target": "accuracy/F1/precision 等指标值字符级对应",
+      "severity": "critical",
+      "method": "regex",
+      "pattern": "(accuracy|F1[-\\s]?score|precision|recall|BLEU|ROUGE|PPL)\\s*[:=\\s]\\s*\\d+\\.?\\d*\\s*%?"
+    },
+    {
+      "name": "大模型专有名词及架构名称保护",
+      "target": "LLaMA/Mistral/Transformer 等专有名词不被错误翻译或改变大小写",
+      "severity": "high",
+      "method": "regex",
+      "pattern": "\\b(LLaMA|Mistral|Qwen|Baichuan|Transformer|Mamba|RWKV)\\b"
+    },
+    {
+      "name": "参考文献引用标记保护",
+      "target": "确保 [1], [2, 3] 等引用标记不被翻译或破坏",
+      "severity": "medium",
+      "method": "regex",
+      "pattern": "\\[\\d+(?:[,，]\\s*\\d+)*\\]"
+    },
+    {
+      "name": "大模型特定术语误译检测",
+      "target": "检测 alignment/token/ablation 等词的常见错误翻译",
+      "severity": "high",
+      "method": "llm",
+      "pattern": ""
     }
   ],
   "academic_quality_checklist": {
@@ -651,6 +884,102 @@
       "wrong": "序列建模 / 顺序建模",
       "correct": "序列建模",
       "context": "RNN and LSTM are widely used for sequence modeling tasks like machine translation."
+    },
+    {
+      "en": "state-of-the-art",
+      "wrong": "最先进",
+      "correct": "当前最优",
+      "context": "论文中指最佳性能"
+    },
+    {
+      "en": "novel",
+      "wrong": "新颖",
+      "correct": "新型",
+      "context": "论文中指提出的新方法或新架构"
+    },
+    {
+      "en": "baseline",
+      "wrong": "基准",
+      "correct": "基线",
+      "context": "论文中指用于对比的基础模型"
+    },
+    {
+      "en": "ablation study",
+      "wrong": "消融研究",
+      "correct": "消融实验",
+      "context": "论文中指验证模型各组件有效性的实验"
+    },
+    {
+      "en": "alignment",
+      "wrong": "校准",
+      "correct": "对齐",
+      "context": "RLHF/DPO语境下指模型与人类意图或价值观对齐"
+    },
+    {
+      "en": "token",
+      "wrong": "令牌",
+      "correct": "词元",
+      "context": "大模型处理文本的基本计算单位"
+    },
+    {
+      "en": "zero-shot",
+      "wrong": "零发",
+      "correct": "零样本",
+      "context": "提示学习或微调中不提供示例的情况"
+    },
+    {
+      "en": "instruction tuning",
+      "wrong": "指令调整",
+      "correct": "指令微调",
+      "context": "大模型后训练阶段基于指令数据的微调方法"
+    },
+    {
+      "en": "chain of thought",
+      "wrong": "思想链",
+      "correct": "思维链",
+      "context": "大模型推理中逐步推导的过程"
+    },
+    {
+      "en": "in-context learning",
+      "wrong": "在上下文中学习",
+      "correct": "上下文学习",
+      "context": "大模型无需参数更新即可通过上下文示例学习的能力"
     }
-  ]
+  ],
+  "paper_writing_phrases": {
+    "常见表达": {
+      "state-of-the-art": {
+        "zh": "当前最优/最先进",
+        "note": "不可直译为'最新的'，特指在特定指标上达到最高水平的SOTA方法"
+      },
+      "baseline": {
+        "zh": "基线模型/对比方法",
+        "note": "用于公平比较的参照标准，通常选取经典或近期权威工作"
+      },
+      "ablation study": {
+        "zh": "消融实验",
+        "note": "控制变量法，逐一移除或替换模块以验证各组件的实际贡献度"
+      },
+      "novel contribution": {
+        "zh": "新颖贡献/创新点",
+        "note": "强调理论推导、架构设计或实验发现上的原创性突破"
+      },
+      "outperform": {
+        "zh": "优于/超越",
+        "note": "学术写作标准用语，避免使用'defeat'等口语化表达"
+      },
+      "empirical": {
+        "zh": "经验性的/实证的",
+        "note": "指基于实验数据与观测结果得出结论，区别于纯理论证明"
+      },
+      "qualitative": {
+        "zh": "定性分析",
+        "note": "侧重机制解释、案例剖析与可视化展示，非纯数值统计"
+      },
+      "quantitative": {
+        "zh": "定量分析",
+        "note": "侧重指标对比、显著性检验与误差范围报告"
+      }
+    }
+  }
 }
