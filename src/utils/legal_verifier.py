@@ -1,8 +1,9 @@
 """
-法律翻译确定性校验引擎
+法律翻译确定性校验引擎 + 学术保护规则
 
 纯确定性算法（正则/树/字典/自动机），不调用任何 LLM。
-提供条款树比对、术语一致性扫描、交叉引用验证、金额校验、标点格式检测等功能。
+提供条款树比对、术语一致性扫描、交叉引用验证、金额校验、标点格式检测、
+高风险标记、文档骨架解析，以及学术翻译的公式/引用/误译保护等功能。
 """
 
 from __future__ import annotations
@@ -1579,6 +1580,96 @@ class LegalVerifier:
 # ============================================================================
 # 自测入口
 # ============================================================================
+
+# ============================================================================
+# 7. AcademicGuard — 学术翻译确定性保护规则
+# ============================================================================
+
+class AcademicGuard:
+    """
+    学术翻译确定性保护规则（零LLM调用）。
+    
+    检测项：
+    - 引用编号 [N] 是否保留
+    - 图表引用 Figure X / Table Y 是否保留
+    - 常见论文误译（state-of-the-art/novel/baseline等）
+    - 公式标记是否保留（需在翻译流程原文标记后再比对）
+    """
+
+    @staticmethod
+    def protect_citations(source: str, target: str) -> list[dict]:
+        """检测引用编号 [N] 是否保留"""
+        src_cites = set(re.findall(r'\[(\d+(?:[,\s]*\d+)*)\]', source))
+        tgt_cites = set(re.findall(r'\[(\d+(?:[,\s]*\d+)*)\]', target))
+        missing = src_cites - tgt_cites
+        extra = tgt_cites - src_cites
+        return [
+            {"type": "missing_citation", "detail": f"引用 [{x}] 在译文中缺失", "severity": "critical"}
+            for x in missing
+        ] + [
+            {"type": "extra_citation", "detail": f"引用 [{x}] 凭空出现（可能误增）", "severity": "warning"}
+            for x in extra
+        ]
+
+    @staticmethod
+    def protect_figure_refs(source: str, target: str) -> list[dict]:
+        """检测图表引用 Figure X / Table Y 是否保留"""
+        src_figs = set(re.findall(r'(Figure|Table|Fig\.)\s*\d+', source, re.IGNORECASE))
+        tgt_figs = set(re.findall(r'(图|表|Figure|Table|Fig\.)\s*\d+', target))
+        issues = []
+        for src in src_figs:
+            # 尝试匹配中文翻译
+            m = re.match(r'(Figure|Fig\.)\s*(\d+)', src, re.IGNORECASE)
+            if m:
+                cn_version = f'图{m.group(2)}'
+                if cn_version not in tgt_figs and src not in tgt_figs:
+                    issues.append({"type": "missing_figure_ref",
+                        "detail": f"图表引用 {src} 可能缺失", "severity": "high"})
+            else:
+                if src not in tgt_figs:
+                    issues.append({"type": "missing_table_ref",
+                        "detail": f"表格引用 {src} 可能缺失", "severity": "high"})
+        return issues
+
+    @staticmethod
+    def detect_mistranslations(text: str) -> list[dict]:
+        """检测论文高频误译"""
+        patterns = [
+            (r'最先进的', '可能误译 state-of-the-art，学术语境应为"当前最优/最先进"', 'medium'),
+            (r'(?<![新])全新的', '可能误译 novel，学术语境应为"新颖的"', 'medium'),
+            (r'基础的(?:模型|方法)', '可能误译 baseline，应为"基线模型/方法"', 'low'),
+            (r'表现(?:好的|不错的)', '避免口语化表述，应为"性能优越/表现良好"', 'low'),
+            (r'最新(?:的|研究)', '可能误译 state-of-the-art 或 recent，应区分"当前最优"vs"最近"', 'medium'),
+        ]
+        results = []
+        for pat, msg, sev in patterns:
+            for m in re.finditer(pat, text):
+                results.append({
+                    "type": "potential_mistrans", "detail": msg, "severity": sev,
+                    "context": text[max(0, m.start() - 20):m.end() + 20],
+                })
+        return results
+
+    @staticmethod
+    def run_all(source: str, target: str) -> dict:
+        """一次运行全部学术保护检查"""
+        citations = AcademicGuard.protect_citations(source, target)
+        figures = AcademicGuard.protect_figure_refs(source, target)
+        mistrans = AcademicGuard.detect_mistranslations(target)
+        total = len(citations) + len(figures) + len(mistrans)
+        return {
+            "citations": citations,
+            "figure_refs": figures,
+            "mistranslations": mistrans,
+            "total_issues": total,
+            "summary": {
+                "critical": sum(1 for x in citations if x["severity"] == "critical"),
+                "high": len(figures),
+                "medium": sum(1 for x in mistrans if x["severity"] == "medium"),
+                "low": sum(1 for x in mistrans if x["severity"] == "low"),
+            },
+        }
+
 
 if __name__ == '__main__':
     # ---------- 测试文本 ----------

@@ -122,37 +122,36 @@ class ChiefEditorAgent(BaseAgent):
                 from src.utils.legal_verifier import LegalVerifier
                 verifier = LegalVerifier()
                 results = verifier.run_all(
-                    source=source, target=translation,
-                    definitions_section=source,
-                )
-                # 提取关键发现注入提示词
-                risk = results.get("risk_heatmap", {})
+                    source=source, target=translation, definitions_section=source)
                 clause_issues = results.get("clause_tree", [])
                 term_issues = results.get("term_scan", [])
                 cross_ref = results.get("cross_refs", [])
                 punct = results.get("punctuation", [])
-
-                findings_parts = []
-                if clause_issues:
-                    findings_parts.append(f"• 【条款结构】{len(clause_issues)}项偏差："
-                        + "; ".join(i.get("detail","")[:60] for i in clause_issues[:3]))
-                if term_issues:
-                    findings_parts.append(f"• 【术语一致】{len(term_issues)}项疑似不一致")
-                bad_refs = [r for r in cross_ref if not r.get("exists")]
-                if bad_refs:
-                    findings_parts.append(f"• 【引用断链】{len(bad_refs)}处引用目标不存在："
-                        + ", ".join(r.get("ref","") for r in bad_refs[:3]))
-                if punct:
-                    findings_parts.append(f"• 【标点格式】{len(punct)}处问题（英文标点残留/半角混用等）")
-                if risk:
-                    findings_parts.append(f"• 【风险分布】{risk.get('total_clauses')}条条款，"
-                        f"critical={risk.get('distribution',{}).get('critical',0)}条，"
-                        f"high={risk.get('distribution',{}).get('high',0)}条")
-
-                if findings_parts:
-                    verifier_findings = "## ⚠️ 确定性校验引擎预扫描结果（请重点关注）\n\n" + "\n".join(findings_parts)
+                risk = results.get("risk_heatmap", {})
+                parts = []
+                if clause_issues: parts.append(f"• 【条款结构】{len(clause_issues)}项偏差")
+                if term_issues: parts.append(f"• 【术语一致】{len(term_issues)}项疑似")
+                if punct: parts.append(f"• 【标点格式】{len(punct)}处")
+                if risk: parts.append(f"• 【风险分布】critical={risk.get('distribution',{}).get('critical',0)}")
+                if parts: verifier_findings = "## ⚠️ 确定性校验引擎预扫描\n\n" + "\n".join(parts)
             except Exception as e:
-                verifier_findings = f"(校验引擎未运行: {e})"
+                verifier_findings = f"(校验引擎: {e})"
+
+        # ── 学术模式：先运行学术保护规则（轨道1）──
+        elif self.mode.value == "academic" and source and translation:
+            try:
+                from src.utils.legal_verifier import AcademicGuard
+                gr = AcademicGuard.run_all(source=source, target=translation)
+                cit = gr.get("citations", [])
+                fig = gr.get("figure_refs", [])
+                mis = gr.get("mistranslations", [])
+                parts = []
+                if cit: parts.append(f"• 【引用缺失】{len(cit)}处引用编号可能丢失")
+                if fig: parts.append(f"• 【图表引用】{len(fig)}处图表引用可能缺失")
+                if mis: parts.append(f"• 【疑似误译】{len(mis)}处(如state-of-the-art/baseline等)")
+                if parts: verifier_findings = "## ⚠️ 学术保护规则预扫描\n\n" + "\n".join(parts)
+            except Exception as e:
+                verifier_findings = f"(保护规则: {e})"
 
         system, user = self._edit_prompt_by_mode(
             chapter, prev_translation, next_translation, source,
