@@ -222,7 +222,9 @@ class TranslationPipeline:
                 summary="前置筹备失败，流水线中断",
             )
 
-        chapters = prep_result.data.get("chapters", chapters or [])
+        # 优先使用传入的章节（含content），回退到分析阶段的章节信息
+        if not chapters:
+            chapters = prep_result.data.get("chapters", [])
 
         # ─── 阶段1：初译 ───
         trans_result = await self._run_translation(chapters, source_lang, target_lang)
@@ -230,18 +232,6 @@ class TranslationPipeline:
         total_cost += self._extract_cost(trans_result)
         if on_stage_complete:
             on_stage_complete(PipelineStage.TRANSLATION, trans_result)
-
-        # ─── 阶段1.2：双直译对照（法律/学术模式）───
-        # 用稍高温度做第二次直译（非再创作），供主编择优融合
-        dual_result = None
-        if self.mode.value in ("legal", "academic"):
-            dual_result = await self._run_translation(
-                chapters, source_lang, target_lang,
-                scenario="compare",
-                temperature_bump=0.1,  # legal: 0.1→0.2, academic: 0.3→0.4
-            )
-            if dual_result.success:
-                self.tracker.log("translation", f"双直译对照完成(V1+V2)")
 
         # ─── 阶段1.5：再创作（仅文学模式） ───
         rewrite_result = None
@@ -283,10 +273,9 @@ class TranslationPipeline:
             translated_chapters = trans_result.data.get("translations", [])
             translated_texts = [tc.get("translation", "") for tc in translated_chapters]
 
-        # ─── 阶段2：主编终审（内置左/右/编三合一审核 + 双直译融合）───
+        # ─── 阶段2：主编终审（内置左/右/编三合一审核）───
         edit_result = await self._run_editing(
             translated_chapters, source_lang, target_lang,
-            dual_translations=dual_result.data.get("translations") if dual_result else None,
         )
         stages[PipelineStage.EDITING] = edit_result
         total_cost += self._extract_cost(edit_result)
@@ -460,10 +449,9 @@ class TranslationPipeline:
 
     async def _run_editing(
         self, translations: list[dict], source_lang: str, target_lang: str,
-        dual_translations: list[dict] = None,
     ) -> StageResult:
         """
-        阶段2：主编终审 — 内置左/右/编三合一审核 + 双直译融合。
+        阶段2：主编终审 — 内置左/右/编三合一审核。
 
         根据模式自动启用不同子职能：
         - 所有模式：统稿润色（基础职能）
@@ -480,12 +468,6 @@ class TranslationPipeline:
 
         self.tracker.log("editing", f"主编终审 | 模式: {self.mode.value}")
 
-        # 主编统稿（双直译融合：V1+V2同时传入）
-        # 将V2版本合并到翻译列表中
-        if dual_translations:
-            for i, t in enumerate(translations):
-                if i < len(dual_translations):
-                    t["v2_compare"] = dual_translations[i].get("translation", "")
         result = self.chief_editor.draft_mode(
             chapter_translations=translations,
             source_lang=source_lang,
