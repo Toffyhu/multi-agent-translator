@@ -66,12 +66,19 @@ class ChapterTranslatorAgent(BaseAgent):
             terminology, style_manual, chapter_context,
         )
 
-        # 3. 调用LLM翻译（根据场景选择模型）
+        # 3. 调用LLM翻译（根据模式调节温度）
+        translation_temp = {
+            "literary": 0.6,
+            "legal": 0.1,
+            "academic": 0.3,
+        }.get(self.mode.value if self.mode else "literary", 0.6)
+
         response_text, context = self._call_llm(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             scenario=scenario,
-            max_tokens=min(len(chapter_text) * 3, 8192),
+            temperature=translation_temp,
+            max_tokens=max(min(len(chapter_text) * 3, 8192), 256),
         )
 
         # 4. 解析翻译结果和存疑标注
@@ -86,6 +93,7 @@ class ChapterTranslatorAgent(BaseAgent):
             data={
                 "chapter_id": chapter_id,
                 "chapter_title": chapter_title,
+                "source_text": chapter_text,  # 保留原文供法律/学术模式编辑器对照
                 "translation": term_check.corrected_text if not term_check.passed else translation,
                 "raw_translation": translation,
                 "doubts": doubts,

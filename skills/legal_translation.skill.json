@@ -1,0 +1,796 @@
+{
+  "skill_name": "legal-translation",
+  "version": "2.1",
+  "generated_at": "2026-06-26 12:30:16",
+  "source": "IMA知识库「法律英语」+「法律实务工具箱」→ Agent知识萃取",
+  "agents_contributing": [
+    "术语风格师 (term_stylist)",
+    "主编终审 (chief_editor)"
+  ],
+  "target_agents": [
+    "术语风格师",
+    "主编终审",
+    "全书分析师",
+    "事实核查"
+  ],
+  "mode": "legal",
+  "terminology": {
+    "情态动词强制译法": {
+      "shall": {
+        "译法": "应当（一般义务）/ 须（强义务）",
+        "说明": "民法典及主流商事合同均倾向使用'应当'；涉及安全、合规、不可协商条款的强义务场景使用'须'",
+        "风险": "译为'应'在正式法律文书中略显口语化；译为'将'则把强制性义务降格为将来时陈述，是致命错误"
+      },
+      "must": {
+        "译法": "必须",
+        "说明": "绝对性义务，通常用于法规或极严格场景，比shall语气更强",
+        "风险": "在商业合同中较少使用，若出现需严格区分于shall的常规义务"
+      },
+      "may": {
+        "译法": "有权（积极权利）/ 可以（一般允许）",
+        "说明": "授权性条款。合同赋予的积极权利用'有权'，中性允许用'可以'",
+        "风险": "单字'可'在中文法律语境中易产生歧义"
+      },
+      "will": {
+        "译法": "将",
+        "说明": "未来行为陈述或承诺，表达意图而非强加义务",
+        "风险": "不可与shall混淆，否则可能弱化或不当强化义务"
+      },
+      "shall not": {
+        "译法": "不得",
+        "说明": "禁止性规定。比'must not'略柔和，适用于商业合同中的常规禁止条款"
+      },
+      "must not": {
+        "译法": "不得 / 严禁",
+        "说明": "绝对禁止。常见于法规引用或安全合规条款"
+      },
+      "may not": {
+        "译法": "不得（无授权）",
+        "说明": "表示'未被授予权利去做'，区别于shall not的'被禁止做'"
+      },
+      "need not": {
+        "译法": "无需",
+        "说明": "豁免性表述，表示某条件或义务不适用"
+      }
+    },
+    "合同结构术语": {
+      "WHEREAS": {
+        "译法": "鉴于",
+        "说明": "合同背景陈述引导词"
+      },
+      "NOW THEREFORE": {
+        "译法": "兹约定如下",
+        "说明": "约因条款引导词"
+      },
+      "IN WITNESS WHEREOF": {
+        "译法": "以资证明",
+        "说明": "签署页引导词"
+      },
+      "hereby": {
+        "译法": "特此",
+        "说明": "表示通过本文书作出声明或行动"
+      },
+      "herein": {
+        "译法": "本协议中",
+        "说明": "指本文件范围内"
+      },
+      "hereto": {
+        "译法": "本协议项下 / 作为本协议一方",
+        "说明": "古英语副词。修饰动词时表示'向本协议'（如party hereto=本协议一方）；修饰名词时表示'作为附件'"
+      },
+      "hereunder": {
+        "译法": "根据本协议",
+        "说明": "指本协议项下或依据本协议规定"
+      },
+      "thereof": {
+        "译法": "其",
+        "说明": "指代前述概念，常接名词构成复合介词短语"
+      },
+      "subject to": {
+        "译法": "受限于 / 以...为准",
+        "说明": "确立条款效力层级或附加限制条件。'受限于'是行业标准译法，准确传递优先权关系"
+      },
+      "without limitation": {
+        "译法": "包括但不限于",
+        "说明": "扩充条款覆盖范围"
+      },
+      "notwithstanding": {
+        "译法": "尽管有...之规定",
+        "说明": "优先条款标识符，表明本条效力高于冲突条款"
+      },
+      "pursuant to": {
+        "译法": "根据/依据",
+        "说明": "表示行为依据的法律文件或合同条款"
+      },
+      "in accordance with": {
+        "译法": "根据/按照",
+        "说明": "与pursuant to近义，侧重符合既定标准或程序"
+      },
+      "aforesaid": {
+        "译法": "上述",
+        "说明": "指代前文已提及的内容，等同于aforementioned"
+      },
+      "aforementioned": {
+        "译法": "前述",
+        "说明": "同aforesaid"
+      },
+      "provided that": {
+        "译法": "但...除外 / 但前提是",
+        "说明": "限定条款。前半句是让步，后半句是限制"
+      },
+      "save as": {
+        "译法": "除...外",
+        "说明": "例外条款引导词，等同于except as"
+      },
+      "except as": {
+        "译法": "除...外",
+        "说明": "否定性范围限定"
+      },
+      "for the avoidance of doubt": {
+        "译法": "为免疑义",
+        "说明": "澄清条款引导词，旨在消除解释歧义"
+      },
+      "without prejudice to": {
+        "译法": "在不影响...的前提下",
+        "说明": "保留性条款，表明本条不损害其他条款效力"
+      },
+      "inter alia": {
+        "译法": "其中包括",
+        "说明": "拉丁词，表示非穷尽列举"
+      },
+      "mutatis mutandis": {
+        "译法": "经必要修改后适用",
+        "说明": "拉丁词，表示参照适用时可根据上下文做必要调整"
+      },
+      "per annum": {
+        "译法": "每年",
+        "说明": "年化表述，合同费用条款常用"
+      },
+      "pro rata": {
+        "译法": "按比例",
+        "说明": "比例分摊"
+      },
+      "sole discretion": {
+        "译法": "自行决定 / 全权决定",
+        "说明": ""
+      },
+      "at its own cost": {
+        "译法": "自行承担费用",
+        "说明": ""
+      },
+      "to the extent that": {
+        "译法": "在...范围内",
+        "说明": "范围限定短语，界定条款适用范围"
+      },
+      "as the case may be": {
+        "译法": "视情况而定",
+        "说明": "备选条款中常用的灵活表述"
+      }
+    },
+    "标准条款名称": {
+      "Definitions": "定义",
+      "Grant of License": "许可授予",
+      "Representations and Warranties": "陈述与保证",
+      "Limitation of Liability": "责任限制",
+      "Indemnification": "赔偿",
+      "Confidentiality": "保密",
+      "Term and Termination": "期限与终止",
+      "Governing Law": "管辖法律",
+      "Dispute Resolution": "争议解决",
+      "Entire Agreement": "完整协议",
+      "Force Majeure": "不可抗力",
+      "Assignment": "转让",
+      "Severability": "可分割性",
+      "Waiver": "弃权",
+      "Notices": "通知",
+      "Amendments": "修订"
+    },
+    "英美法特有术语映射": {
+      "consideration": {
+        "译法": "对价",
+        "说明": "英美合同法核心概念，大陆法系无直接对应，但中文法律界约定俗成译为'对价'"
+      },
+      "equity/equitable remedy": {
+        "译法": "衡平法/衡平法救济",
+        "说明": "与普通法(common law)并列的法律体系，侧重公平原则"
+      },
+      "tort": {
+        "译法": "侵权",
+        "说明": "区别于违约(breach of contract)，属法定民事责任"
+      },
+      "injunction": {
+        "译法": "禁制令/禁令",
+        "说明": "衡平法救济方式，法院命令当事人停止或实施特定行为"
+      },
+      "specific performance": {
+        "译法": "特定履行/实际履行",
+        "说明": "法院判令违约方按合同约定实际履行义务，而非仅金钱赔偿"
+      },
+      "estoppel": {
+        "译法": "禁止反言",
+        "说明": "一方言行使他人产生合理信赖后，不得再提出相反主张"
+      },
+      "fiduciary duty": {
+        "译法": "信义义务/受托义务",
+        "说明": "基于特殊信任关系产生的最高标准注意与忠诚义务"
+      },
+      "liquidated damages": {
+        "译法": "约定损害赔偿金/违约金",
+        "说明": "区别于penalty(罚金)，需为合理预估损失"
+      }
+    },
+    "责任界定术语": {
+      "indemnify": {
+        "译法": "赔偿/补偿",
+        "说明": "填补损失的赔偿责任。区别于compensate(公平给付)"
+      },
+      "compensate": {
+        "译法": "补偿",
+        "说明": "基于公平原则的给付，不必然以损失为限"
+      },
+      "hold harmless": {
+        "译法": "使...免受损失",
+        "说明": "免责条款。通常与indemnify并列使用"
+      },
+      "material breach": {
+        "译法": "根本违约",
+        "说明": "足以导致合同解除的严重违约"
+      },
+      "cure period": {
+        "译法": "补救期 / 宽限期",
+        "说明": "违约方纠正违约行为的时限"
+      },
+      "reasonable efforts": {
+        "译法": "合理努力",
+        "说明": "低于best efforts，无需穷尽一切手段"
+      },
+      "best endeavours": {
+        "译法": "最大努力",
+        "说明": "英国法中高于reasonable efforts"
+      },
+      "joint and several": {
+        "译法": "连带",
+        "说明": "连带责任(joint and several liability)"
+      },
+      "liquidated damages": {
+        "译法": "约定损害赔偿金 / 违约金",
+        "说明": "区分于惩罚性赔偿(penalty)"
+      },
+      "deem": {
+        "译法": "视为",
+        "说明": "法律拟制用语，不可译为'认为'"
+      },
+      "presumed": {
+        "译法": "推定",
+        "说明": "法律推定，可被相反证据推翻"
+      },
+      "time is of the essence": {
+        "译法": "时间是合同要件 / 时间至关重要",
+        "说明": "强调时间要素的法律效力"
+      }
+    },
+    "程序与效力术语": {
+      "conditions precedent": {
+        "译法": "先决条件/生效条件",
+        "说明": "合同生效前置条件"
+      },
+      "conditions subsequent": {
+        "译法": "解除条件",
+        "说明": "触发合同终止的后置条件"
+      },
+      "irrevocable": {
+        "译法": "不可撤销",
+        "说明": ""
+      },
+      "null and void": {
+        "译法": "无效 / 不具有法律效力",
+        "说明": "两个词并列强调，不翻译两次"
+      },
+      "severability": {
+        "译法": "可分割性",
+        "说明": "某条款无效不影响其他条款"
+      },
+      "waiver": {
+        "译法": "弃权",
+        "说明": "主动放弃权利；不作为不视为弃权"
+      },
+      "estoppel": {
+        "译法": "禁止反言",
+        "说明": "禁止当事人主张与先前行为或陈述相矛盾的立场"
+      },
+      "governing law": {
+        "译法": "管辖法律",
+        "说明": "合同适用法律"
+      },
+      "jurisdiction": {
+        "译法": "管辖权 / 管辖法院",
+        "说明": "约定争议的管辖法院或仲裁地"
+      },
+      "venue": {
+        "译法": "审判地 / 仲裁地",
+        "说明": "与jurisdiction配合使用，指定具体地点"
+      }
+    },
+    "金额与商业术语": {
+      "consideration": {
+        "译法": "对价",
+        "说明": "英美合同法核心概念。大陆法中无直接对应"
+      },
+      "royalty": {
+        "译法": "许可费 / 版税",
+        "说明": "按使用量或收入计提的费用"
+      },
+      "lump sum": {
+        "译法": "一次性付款 / 总价",
+        "说明": ""
+      },
+      "installment": {
+        "译法": "分期付款",
+        "说明": ""
+      },
+      "earnest money": {
+        "译法": "定金",
+        "说明": "区分于deposit(保证金)"
+      },
+      "notional": {
+        "译法": "名义上的 / 概念上的",
+        "说明": "金融法常见，非实际发生的"
+      },
+      "gross negligence": {
+        "译法": "重大过失",
+        "说明": "高于ordinary negligence(一般过失)"
+      },
+      "willful misconduct": {
+        "译法": "故意不当行为",
+        "说明": "比negligence更严重的责任基础"
+      }
+    }
+  },
+  "translation_rules": {
+    "必须保留的事项": [
+      "条款编号层级（Article/Section/Clause/Subsection）不可变",
+      "金额、币种、日期、百分比（字符级精确对应，含小数点与千分位）",
+      "已定义术语（Defined Terms）全篇统一译法，首字母大写标识",
+      "条件关系词（if/unless/subject to/provided that）逻辑连接不可省略",
+      "交叉引用格式（pursuant to Section X, as amended）保持原结构",
+      "标点符号规范：英文逗号分隔长句列表时，中文需转为顿号或分号；引号、括号需符合中文排版习惯"
+    ],
+    "常见错误模式": [
+      "shall误译为'将'或'会'，导致强制性义务弱化为将来时态陈述",
+      "and/or仅译'和'或'或'，遗漏任一均改变法律适用范围",
+      "长难句机械拆分，破坏'条件-例外-结果'的逻辑链条",
+      "中文歧义句式：如'甲方对乙方的赔偿'未明确责任主体与方向（应为'甲方应向乙方支付赔偿'）",
+      "英美法概念直译或音译（如将'tort'译作'托特'），未采用中国法律界通行译法",
+      "忽略'including but not limited to'中的'but not limited to'，导致保护范围不当限缩"
+    ]
+  },
+  "defect_rules": [
+    {
+      "id": "rule_001",
+      "name": "shall误译为'将'或'会'",
+      "target": "检测法律英语中表示义务的'shall'被误译为表将来的'将'或'会'",
+      "method": "regex",
+      "pattern": "(?i)\\bshall\\b[^。！？\\n]*?(?:将|会)",
+      "severity": "critical",
+      "fix": "将'将/会'修改为'应'、'须'或'有义务'，确保体现法律约束力。（升级理由：shall→将/会是致命错误，直接把强制性义务变为将来陈述，法律效力完全改变）"
+    },
+    {
+      "id": "rule_002",
+      "name": "条款编号完整性与连续性",
+      "target": "检测译文中的条款编号（如Article, Section, Clause）是否缺失、重复或乱序",
+      "method": "deterministic",
+      "pattern": "(?:Article|Section|Clause|第[一二三四五六七八九十百千]+条)\\s*(\\d+(?:\\.\\d+)*)",
+      "severity": "critical",
+      "fix": "核对源文本，补全缺失编号，修正乱序或重复的编号，确保层级结构完全一致。"
+    },
+    {
+      "id": "rule_003",
+      "name": "定义术语全篇一致性",
+      "target": "检测源文本中已定义的大写术语在译文中是否使用了统一的译名",
+      "method": "llm",
+      "pattern": "",
+      "severity": "critical",
+      "fix": "提取源文术语表，统一译文中的对应译名，确保同一术语全篇译法一致，避免同义词混用。"
+    },
+    {
+      "id": "rule_004",
+      "name": "金额/日期/百分比字符级对应",
+      "target": "检测译文中的数字、金额、日期、百分比是否与源文本完全一致，无增删改",
+      "method": "deterministic",
+      "pattern": "\\d+(?:,\\d{3})*(?:\\.\\d+)?(?:\\s*%|\\s*(?:USD|RMB|EUR|CNY|days?|months?|years?))",
+      "severity": "critical",
+      "fix": "逐一比对源文和译文中的数值型数据，修正任何不一致的数字、货币单位或日期格式。"
+    },
+    {
+      "id": "rule_005",
+      "name": "条件关系词误译或漏译",
+      "target": "检测 if, unless, subject to, provided that 等条件/例外关系词是否被正确翻译，未改变逻辑条件",
+      "method": "llm",
+      "pattern": "(?i)(?:if|unless|subject\\s+to|provided\\s+that|unless\\s+otherwise)",
+      "severity": "critical",
+      "fix": "确保 if 译为'如果/若'，unless 译为'除非'，subject to 译为'受限于/以...为准'，provided that 译为'前提是/但'。"
+    },
+    {
+      "id": "rule_006",
+      "name": "中文介词结构歧义检测",
+      "target": "检测'甲方对乙方的赔偿'等介词结构是否存在施受关系歧义",
+      "method": "llm",
+      "pattern": "(?:甲方|乙方|买方|卖方|出租方|承租方)(?:对|向|给)(?:甲方|乙方|买方|卖方|出租方|承租方)的(?:赔偿|支付|交付|转让)",
+      "severity": "high",
+      "fix": "结合源文本明确动作的发出者和接收者，改写为无歧义表达，如'甲方应向乙方支付赔偿金'。"
+    },
+    {
+      "id": "rule_007",
+      "name": "长句拆分导致逻辑断裂",
+      "target": "检测源文本的长句在译文中被不当拆分为多个独立句子，导致条件、例外或修饰语与主句逻辑断裂",
+      "method": "llm",
+      "pattern": "",
+      "severity": "high",
+      "fix": "使用分号、逗号或连词将拆分不当的句子重新连接，确保条件状语、定语从句与主句的逻辑依附关系完整。"
+    },
+    {
+      "id": "rule_008",
+      "name": "英文标点及半角空格残留",
+      "target": "检测中文译文中是否残留英文标点或中英文之间不必要的半角空格",
+      "method": "regex",
+      "pattern": "[\\u4e00-\\u9fa5][,.!?;:][\\u4e00-\\u9fa5]|[\\u4e00-\\u9fa5]\\s+[\\u4e00-\\u9fa5]",
+      "severity": "medium",
+      "fix": "将英文标点替换为对应的中文全角标点，删除中文字符之间的半角空格。"
+    },
+    {
+      "id": "rule_009",
+      "name": "法律段落格式与层级保持",
+      "target": "检测译文是否保持了源文本的段落缩进、列表符号及层级结构",
+      "method": "regex",
+      "pattern": "^\\s*(?:\\([a-z]\\)|\\([ivx]+\\)|\\([A-Z]\\)|\\d+\\.)\\s+",
+      "severity": "medium",
+      "fix": "严格对齐源文本的列表符号和缩进层级，确保(a)(b)(c)或(i)(ii)(iii)等子条款格式在译文中完全一致。"
+    },
+    {
+      "id": "rule_010",
+      "name": "义务/权利/禁止情态动词混淆",
+      "target": "检测 may (权利) 被误译为'应'，或 shall not/must not (禁止) 被误译为'可以不'",
+      "method": "llm",
+      "pattern": "(?i)\\b(?:may|shall\\s+not|must\\s+not)\\b",
+      "severity": "critical",
+      "fix": "将 may 译为'可以/有权'，shall not/must not 译为'不得/不应'，严禁混淆权利与义务。"
+    },
+    {
+      "id": "rule_011",
+      "name": "动作方向性动词误译",
+      "target": "检测 indemnify, pay, deliver 等动词的施受方向是否与源文本一致",
+      "method": "llm",
+      "pattern": "(?i)(?:indemnif|compensat|pay|deliver|transfer)",
+      "severity": "critical",
+      "fix": "核对源文本的介词（如 pay to），确保译文中的动作方向（如'向...支付'）完全正确。"
+    },
+    {
+      "id": "rule_012",
+      "name": "法律主体名称及代词指代一致性",
+      "target": "检测合同主体名称及 he/she/it/they 等代词指代是否准确且全篇一致",
+      "method": "llm",
+      "pattern": "",
+      "severity": "high",
+      "fix": "统一主体名称译法，明确代词指代的具体实体，必要时将代词还原为具体实体名称以消除歧义。"
+    },
+    {
+      "id": "rule_013",
+      "name": "管辖法律与争议解决条款漏译",
+      "target": "检测 Governing Law, Jurisdiction, Arbitration 等核心争议解决条款是否被漏译或关键术语误译",
+      "method": "llm",
+      "pattern": "(?i)\\b(?:governing\\s+law|jurisdiction|arbitration|dispute\\s+resolution)\\b",
+      "severity": "critical",
+      "fix": "确保管辖法律、法院管辖权、仲裁机构等核心条款完整翻译，使用标准法律术语。"
+    },
+    {
+      "id": "rule_014",
+      "name": "括号及括号内内容漏译或错位",
+      "target": "检测源文本中的括号内容（尤其是补充说明、定义引用）是否在译文中被漏译或位置错乱",
+      "method": "regex",
+      "pattern": "\\(.*?\\)",
+      "severity": "high",
+      "fix": "核对源文本括号内容，确保所有括号内的补充信息、条款引用均被准确翻译并放置在正确位置。"
+    },
+    {
+      "id": "rule_015",
+      "name": "连词 and/or 误译",
+      "target": "检测 and (并列) 和 or (选择) 是否被混淆，特别是 and/or 是否被错误简化",
+      "method": "regex",
+      "pattern": "(?i)\\band/or\\b",
+      "severity": "high",
+      "fix": "将 and 译为'和/及'，or 译为'或'，and/or 译为'和/或'或'及/或'，严禁改变并列或选择逻辑。"
+    },
+    {
+      "id": "rule_016",
+      "name": "生效条件与时间状语从句错位",
+      "target": "检测 upon, after, before, until 等时间/条件状语引导的从句是否被错误地修饰了主句的错误部分",
+      "method": "llm",
+      "pattern": "(?i)\\b(?:upon|after|before|until|when)\\s+",
+      "severity": "high",
+      "fix": "调整语序，确保时间/条件状语从句在译文中紧密修饰其逻辑上的主句动作，避免逻辑倒置。"
+    }
+  ],
+  "quality_checklist": {
+    "must_pass": [
+      "核心数字、金额、日期、百分比100%准确无误",
+      "义务(shall/must)、权利(may)、禁止(shall not)等情态动词逻辑准确",
+      "条件关系词(if/unless/subject to)及连词(and/or)逻辑准确",
+      "无英文标点残留及严重的排版格式错乱",
+      "核心条款（管辖、争议解决、赔偿）无漏译",
+      "定义术语全篇译名一致",
+      "定义术语(Defined Terms)全篇译名100%一致，且与术语表严格对应——不一致一票否决",
+      "条款编号完整无误——源文译文的Article/Section/Clause编号层级+序列完全一致",
+      "shall→应当/须（不得出现'将''会'等弱化译法）"
+    ],
+    "should_pass": [
+      "长句拆分后逻辑连贯，无歧义",
+      "段落层级、列表符号与源文完全对齐",
+      "中文表达符合法律文体规范，无口语化表达"
+    ]
+  },
+  "back_translation_rules": {
+    "description": "回译验证（Back-Translation）用于检验译文是否准确传达了源文本的法律意图，特别是在处理复杂长句、模糊表达或关键责任条款时，通过回译对比发现隐性逻辑偏差。",
+    "trigger": "1. 涉及核心责任分配、赔偿上限、免责条款的复杂长句；2. 包含多重条件嵌套（如 if... unless... provided that...）的条款；3. 源文本本身存在语法瑕疵或表达模糊，需确认译文是否进行了合理的法律解释；4. 质量抽检中发现的高危缺陷段落。",
+    "method": "1. 由未看过源文本的独立译者（或LLM）将中文译文翻译回英文；2. 将回译英文与源英文进行逐句比对（Diff分析）；3. 重点审查回译文本在义务主体、条件触发、时间节点上是否与源文本存在实质性差异；4. 若存在差异，需判定是译文错误还是源文模糊，并据此修正中文译文。"
+  },
+  "updated_at": "2026-06-27 12:13:06",
+  "changelog": [
+    "P0: shall=应→应当(民法典标准)/须(强义务语境)",
+    "P0: may=可→有权(积极权利)/可以(一般允许)",
+    "P0: hereto=于本协议→本协议项下/作为本协议一方",
+    "P0: subject to=但在...前提下→受限于/以...为准",
+    "P0: shall误译严重级别 high→critical",
+    "P0: 术语一致性 should_pass→must_pass",
+    "补充15个毗邻法律术语(material breach/cure period/aforesaid/provided that等)",
+    "补充6个情态动词复合结构(shall not/may not等)",
+    "新增责任界定术语类(indemnify vs compensate等)",
+    "新增程序与效力术语类(conditions precedent/irrevocable等)",
+    "v2.1: 术语风格师萃取风格锁定词表+义务强度分级+易混淆术语对照"
+  ],
+  "style_locking_glossary": {
+    "责任分配": [
+      {
+        "en": "indemnify and hold harmless",
+        "zh": "赔偿并使...免受损失",
+        "context": "责任限制与赔偿条款标准组合",
+        "note": "两个词并列是标准法律语言，不要合并翻译为“赔偿”"
+      },
+      {
+        "en": "joint and several liability",
+        "zh": "连带责任",
+        "context": "多方违约或侵权时的责任承担方式",
+        "note": "对应《民法典》第178条，不可拆分适用，需明确追偿权"
+      },
+      {
+        "en": "limitation of liability",
+        "zh": "责任限制",
+        "context": "商业合同中设定赔偿上限的条款",
+        "note": "通常配合“except for gross negligence or willful misconduct”使用，受《民法典》第506条格式条款规制"
+      },
+      {
+        "en": "consequential damages",
+        "zh": "间接损失",
+        "context": "排除或限定赔偿范围的常见表述",
+        "note": "指非直接发生的利润损失、商誉损失等，中国法下需符合可预见性规则（第584条）"
+      },
+      {
+        "en": "force majeure",
+        "zh": "不可抗力",
+        "context": "免责事由的标准定义条款",
+        "note": "需符合《民法典》第180条“不能预见、不能避免且不能克服”要件，并履行通知义务"
+      }
+    ],
+    "时间要素": [
+      {
+        "en": "within [X] days after receipt of",
+        "zh": "自收到...之日起[X]日内",
+        "context": "付款、通知或履约期限的起算点",
+        "note": "“after”在法律语境中通常含本数，需结合上下文确认是否含当日"
+      },
+      {
+        "en": "time is of the essence",
+        "zh": "时间是本合同的关键要素 / 严格守时",
+        "context": "强调按期履约具有根本性意义",
+        "note": "违反将构成根本违约，守约方有权解除合同并要求赔偿"
+      },
+      {
+        "en": "without undue delay",
+        "zh": "毫不迟延地 / 及时",
+        "context": "通知、补救或协助义务的履行标准",
+        "note": "比“immediately”更灵活，需结合交易习惯判断合理期间"
+      },
+      {
+        "en": "effective date",
+        "zh": "生效日",
+        "context": "合同权利义务开始计算的基准日",
+        "note": "区别于签署日（Execution Date），通常以最后一方签字盖章或满足先决条件之日为准"
+      },
+      {
+        "en": "term of this Agreement",
+        "zh": "本协议期限",
+        "context": "合同存续期间的界定",
+        "note": "包含自动续约（automatic renewal）或到期终止（expiration）机制，届满后保密/清算条款通常继续有效"
+      }
+    ],
+    "数量与范围": [
+      {
+        "en": "including but not limited to",
+        "zh": "包括但不限于",
+        "context": "列举式条款的开放性兜底",
+        "note": "防止因未穷尽列举而限缩解释范围，符合中国法扩张解释惯例"
+      },
+      {
+        "en": "sole and exclusive remedy",
+        "zh": "唯一且排他的救济措施",
+        "context": "违约赔偿范围的封顶条款",
+        "note": "排除其他法定或约定救济途径（如实际履行、惩罚性赔偿）"
+      },
+      {
+        "en": "aggregate amount",
+        "zh": "累计金额 / 总额",
+        "context": "赔偿上限的计算基数",
+        "note": "区别于单次索赔限额（per incident cap），通常按合同年度滚动计算"
+      },
+      {
+        "en": "reasonable efforts",
+        "zh": "合理努力",
+        "context": "促成交易或审批的附随义务标准",
+        "note": "低于“best efforts”（最大努力），不要求付出极端成本或牺牲自身重大利益"
+      },
+      {
+        "en": "pro rata",
+        "zh": "按比例",
+        "context": "费用分摊、股权稀释或收益分配的数学计算",
+        "note": "常与“based on ownership percentage”连用，需明确计算基准日"
+      }
+    ],
+    "条件与例外": [
+      {
+        "en": "subject to",
+        "zh": "受...约束 / 以...为前提",
+        "context": "条款效力的从属关系或优先顺序",
+        "note": "后接条款效力通常高于前接条款，用于解决条款冲突"
+      },
+      {
+        "en": "provided that",
+        "zh": "但书 / 前提是",
+        "context": "主句后的限制性例外条款",
+        "note": "相当于中文合同的“但...”结构，用于创设例外情形或附加条件"
+      },
+      {
+        "en": "unless otherwise agreed in writing",
+        "zh": "除非双方另行书面同意",
+        "context": "形式要件的保留条款",
+        "note": "排除口头变更的效力，符合《民法典》第469条书面形式要求"
+      },
+      {
+        "en": "without prejudice to",
+        "zh": "不影响 / 不妨碍",
+        "context": "权利保留或并行救济的声明",
+        "note": "确保某项权利的行使不导致其他权利的放弃，常用于争议解决条款"
+      },
+      {
+        "en": "conditional upon",
+        "zh": "取决于 / 以...为条件",
+        "context": "先决条件（Conditions Precedent）的触发机制",
+        "note": "常用于交割、放款或协议生效节点，未满足则义务中止"
+      }
+    ],
+    "文件与程序": [
+      {
+        "en": "executed counterpart",
+        "zh": "分别签署的副本",
+        "context": "多方法律文件签署方式的描述",
+        "note": "各份副本合在一起构成一份完整协议，具有同等法律效力"
+      },
+      {
+        "en": "notice in writing",
+        "zh": "书面通知",
+        "context": "沟通、催告或解除程序的载体要求",
+        "note": "需明确送达地址、电子送达有效性及视为送达的时间点"
+      },
+      {
+        "en": "governing law",
+        "zh": "适用法律 / 准据法",
+        "context": "冲突规范指引下的实体法选择",
+        "note": "决定合同解释、效力及争议解决的实体规则体系"
+      },
+      {
+        "en": "dispute resolution mechanism",
+        "zh": "争议解决机制",
+        "context": "仲裁、诉讼或调解的程序路径",
+        "note": "需明确管辖法院或仲裁机构，避免条款无效或管辖权异议"
+      },
+      {
+        "en": "audit rights",
+        "zh": "审计权 / 查账权",
+        "context": "一方对另一方财务记录进行核查的合同权利",
+        "note": "通常限定在正常营业时间、提前通知及保密义务范围内"
+      }
+    ]
+  },
+  "obligation_intensity_ladder": {
+    "最强": {
+      "触发词": [
+        "must",
+        "shall",
+        "is required to"
+      ],
+      "译法": "必须/须",
+      "后果": "不可协商的绝对义务/强制性规范（违反可能导致合同无效、行政处罚或根本违约）"
+    },
+    "强": {
+      "触发词": [
+        "shall"
+      ],
+      "译法": "应当",
+      "后果": "一般合同义务/法定义务（未履行构成违约，需承担继续履行、采取补救措施或赔偿责任）"
+    },
+    "中等": {
+      "触发词": [
+        "will",
+        "agrees to",
+        "undertakes to"
+      ],
+      "译法": "将/同意/承诺",
+      "后果": "承诺或未来行为（侧重主观意愿或单方保证，违约后果依具体约定及过错程度认定）"
+    },
+    "弱": {
+      "触发词": [
+        "may",
+        "is entitled to",
+        "has the right to"
+      ],
+      "译法": "有权/可",
+      "后果": "授权而非义务（赋予选择权，不行使不构成违约，通常伴随不得滥用权利的限制）"
+    },
+    "豁免": {
+      "触发词": [
+        "need not",
+        "is not required to",
+        "shall not be obliged to"
+      ],
+      "译法": "无需/不负有义务",
+      "后果": "明确免除（排除特定情形下的作为或不作为责任，常与免责条款联动）"
+    }
+  },
+  "formatting_rules": [
+    "Defined Terms 在中文译文中统一采用加粗或双引号标注（如**标的资产**或“标的资产”），首字母大写格式不直接移植至汉字",
+    "英文逗号分隔的并列项→中文顿号或分号；英文括号→中文全角括号，并调整内部标点层级",
+    "英文长句拆分为中文短句：遵循‘一逗到底’原则，按逻辑主语切分，避免嵌套从句导致的歧义",
+    "日期与货币格式：转换为‘YYYY年MM月DD日’及‘币种+阿拉伯数字’（如人民币100万元），去除英文缩写",
+    "条款编号层级：英文(1)(a)(i)→中文（一）（1）①，保持与中国《民法典》及商事合同排版规范一致"
+  ],
+  "dangerous_false_friends": [
+    {
+      "en": "damage",
+      "wrong_zh": "损害(抽象)",
+      "correct_zh": "损害(具体财产/人身损失)",
+      "vs": "damages→损害赔偿金(金钱给付)"
+    },
+    {
+      "en": "warranty",
+      "wrong_zh": "担保",
+      "correct_zh": "保证(合同质量/权利瑕疵担保)",
+      "vs": "guarantee→独立担保/保证合同(人保)"
+    },
+    {
+      "en": "termination",
+      "wrong_zh": "撤销",
+      "correct_zh": "解除/终止(合同效力向将来消灭)",
+      "vs": "rescission/cancellation→撤销(溯及既往消灭效力)"
+    },
+    {
+      "en": "consideration",
+      "wrong_zh": "考虑因素",
+      "correct_zh": "对价(英美法合同成立核心要素)",
+      "vs": "counterparty→相对方/交易对手"
+    },
+    {
+      "en": "representation",
+      "wrong_zh": "代表",
+      "correct_zh": "陈述(事实声明，构成合同基础)",
+      "vs": "agency/representative→代理/代理人(法律关系)"
+    }
+  ]
+}

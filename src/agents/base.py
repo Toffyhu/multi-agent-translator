@@ -10,10 +10,38 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Optional
 
 from src.assets.schema import AssetStore
 from src.models.registry import ModelRegistry
+
+
+class PipelineMode(str, Enum):
+    """翻译模式（所有Agent共用）"""
+    LITERARY  = "literary"
+    LEGAL     = "legal"
+    ACADEMIC  = "academic"
+
+    @property
+    def temperature_range(self) -> tuple[float, float]:
+        return {
+            PipelineMode.LITERARY:  (0.4, 0.7),
+            PipelineMode.LEGAL:     (0.1, 0.2),
+            PipelineMode.ACADEMIC:  (0.2, 0.4),
+        }[self]
+
+    @property
+    def allow_rewrite(self) -> bool:
+        return self == PipelineMode.LITERARY
+
+    @property
+    def require_terminology_lock(self) -> bool:
+        return self in (PipelineMode.LEGAL, PipelineMode.ACADEMIC)
+
+    @property
+    def use_back_translation_verify(self) -> bool:
+        return self == PipelineMode.LEGAL
 
 
 @dataclass
@@ -48,9 +76,16 @@ class BaseAgent(ABC):
         self,
         model_registry: Optional[ModelRegistry] = None,
         asset_store: Optional[AssetStore] = None,
+        mode: Optional[str | PipelineMode] = None,
     ):
         self.registry = model_registry or ModelRegistry()
         self.assets = asset_store or AssetStore()
+        if isinstance(mode, str):
+            self.mode = PipelineMode(mode)
+        elif mode is None:
+            self.mode = PipelineMode.LITERARY
+        else:
+            self.mode = mode
         self._last_context: Optional[AgentContext] = None
 
     def get_client(self, scenario: str = "default"):
@@ -73,7 +108,7 @@ class BaseAgent(ABC):
         max_tokens: int = 4096,
     ) -> tuple[str, AgentContext]:
         """
-        调用LLM的统一接口。自动注入共享知识库。
+        调用LLM的统一接口。自动注入共享知识库 + 模式专属知识。
 
         Returns:
             (response_text, AgentContext)
@@ -85,6 +120,15 @@ class BaseAgent(ABC):
 
 ## 📚 共享翻译技能知识（所有Agent必须遵循）
 {knowledge_block}"""
+
+        # 按模式注入专属知识（如法律模式注入法律翻译术语+规则）
+        if self.mode and self.mode.value == "legal":
+            legal_block = self.assets.get_legal_knowledge_block()
+            if legal_block:
+                system_prompt = f"""{system_prompt}
+
+## ⚖️ 法律翻译专业技能知识（法律模式强制遵循）
+{legal_block}"""
 
         client, model_key, spec = self.get_client(scenario)
 

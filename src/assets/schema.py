@@ -172,6 +172,7 @@ class AssetStore:
         self.terminology: Optional[TerminologyTable] = None
         self.style_manual: Optional[StyleManual] = None
         self.shared_knowledge: Optional[SharedKnowledge] = None
+        self.legal_knowledge_text: Optional[str] = None  # 法律模式专属知识（从skill.json/md加载）
         self._initialized = True
 
     def _ensure_dirs(self):
@@ -280,6 +281,57 @@ class AssetStore:
         if not kb:
             return ""
         return kb.get_full_text()
+
+    # ─── 法律模式专属知识加载 ───
+
+    def load_legal_knowledge(self, md_path: str):
+        """加载法律翻译专业知识（从 Markdown 或 JSON 文件）"""
+        import json
+        from pathlib import Path
+        path = Path(md_path)
+        if not path.exists():
+            return
+        text = path.read_text(encoding="utf-8")
+        # 如果是 JSON 技能文件，提取关键信息转为 Markdown
+        if md_path.endswith('.json'):
+            try:
+                data = json.loads(text)
+                lines = []
+                t = data.get("terminology", {})
+                for cat_name, items in t.items():
+                    if isinstance(items, dict):
+                        lines.append(f"### {cat_name}")
+                        for k, v in items.items():
+                            if isinstance(v, dict):
+                                zh = v.get("译法", "")
+                                desc = v.get("说明", "")
+                                lines.append(f"- {k} → {zh} | {desc}")
+                            elif isinstance(v, str):
+                                lines.append(f"- {k} → {v}")
+                        lines.append("")
+                rules = data.get("defect_rules", [])
+                if rules:
+                    lines.append("### 法律翻译缺陷检测规则")
+                    for r in rules:
+                        if isinstance(r, dict):
+                            lines.append(f"- [{r.get('severity','')}] {r.get('name','')}: {r.get('target','')}")
+                    lines.append("")
+                qc = data.get("quality_checklist", {})
+                for level in ("must_pass", "should_pass"):
+                    items = qc.get(level, [])
+                    if items:
+                        lines.append(f"### {level}")
+                        for it in items:
+                            lines.append(f"- {it}")
+                        lines.append("")
+                text = "\n".join(lines)
+            except:
+                pass
+        self.legal_knowledge_text = text
+
+    def get_legal_knowledge_block(self) -> str:
+        """获取法律翻译专属知识块（法律模式Agent自动注入）"""
+        return self.legal_knowledge_text or ""
 
     # ─── 加载已持久化的资产 ───
 
