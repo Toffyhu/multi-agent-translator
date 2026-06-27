@@ -1239,6 +1239,212 @@ class HighRiskTagger:
 
 
 # ============================================================================
+# 5.6 DocumentSkeleton — 文档骨架解析（目录校验 + 附件映射）
+# ============================================================================
+
+class DocumentSkeleton:
+    """
+    法律文档骨架解析器。
+
+    从法律文档中提取：
+    - 目录 (Table of Contents) 及其与正文的一致性
+    - 条款层级树 (Article/Section/Clause)
+    - 附件/附表映射 (Exhibit/Schedule/Annex)
+    - 交叉引用依赖图
+    """
+
+    # 条款编号模式（支持多级嵌套）
+    CLAUSE_PATTERN = re.compile(
+        r'^\s*'
+        r'(?:'
+        r'(?:Article|ARTICLE)\s+(\d+[A-Z]?)'         # Article 1, Article 1A
+        r'|(?:Section|SECTION)\s+(\d+(?:\.\d+)*)'     # Section 1, Section 1.1
+        r'|(?:Clause|CLAUSE)\s+(\d+(?:\.\d+)*)'      # Clause 1.1
+        r'|(\d+)\.\s'                                  # 1. Title
+        r'|(\d+\.\d+)\s'                               # 1.1 Title
+        r'|(\([a-zA-Z]\))'                             # (a), (b)
+        r'|(\([ivxlcdm]+\))'                           # (i), (ii)
+        r')'
+        r'\s*(.+)',                                    # 后续内容
+        re.IGNORECASE
+    )
+
+    # 附件模式
+    ATTACHMENT_PATTERN = re.compile(
+        r'(?:Exhibit|EXHIBIT|Schedule|SCHEDULE|Annex|ANNEX|Appendix|APPENDIX)\s+([A-Z0-9]+)',
+        re.IGNORECASE
+    )
+
+    # 目录条目模式
+    TOC_PATTERN = re.compile(
+        r'^\s*'
+        r'(?:'
+        r'(?:Article|Section|Clause)\s+\d+'
+        r'|\d+(?:\.\d+)*'
+        r')'
+        r'\s*\.?\s+.+',
+    )
+
+    def parse_toc(self, text: str) -> list[dict]:
+        """
+        提取目录条目。
+
+        返回：[{number, title, line_number}]
+        """
+        entries = []
+        for i, line in enumerate(text.split('\n')):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            # 目录行：带编号 + 后续文字 + 可能有点号引导线
+            if self.TOC_PATTERN.match(stripped):
+                # 尝试提取编号和标题
+                m = re.match(r'^([\d.A-Za-z()]+)\s*\.?\s*(.+?)(?:\s*\.{2,}|\s*\d+)?$', stripped)
+                if m:
+                    entries.append({
+                        "number": m.group(1),
+                        "title": m.group(2).strip()[:100],
+                        "line": i + 1,
+                    })
+        return entries
+
+    def parse_skeleton(self, text: str) -> dict:
+        """
+        解析文档骨架。
+
+        返回：
+        {
+            "toc_entries": [...],
+            "clauses": [...],
+            "attachments": {...},
+            "cross_refs": [...],
+        }
+        """
+        lines = text.split('\n')
+
+        # 条款提取
+        clauses = []
+        current = None
+        for line in lines:
+            stripped = line.strip()
+            m = self.CLAUSE_PATTERN.match(stripped)
+            if m:
+                if current:
+                    clauses.append(current)
+                # 提取编号（从第一个非None的group）
+                number = next((g for g in m.groups()[:-1] if g is not None), m.group(0))
+                title = m.groups()[-1][:120]
+                current = {
+                    "number": number,
+                    "title": title,
+                    "depth": self._clause_depth(number),
+                    "text": stripped,
+                }
+            elif current:
+                current["text"] += " " + stripped
+        if current:
+            clauses.append(current)
+
+        # 附件提取
+        attachments = {}
+        for m in self.ATTACHMENT_PATTERN.finditer(text):
+            letter = m.group(1)
+            context = text[max(0, m.start()-20):m.end()+60]
+            attachments[letter] = {
+                "ref": m.group(0),
+                "context": context.replace('\n', ' '),
+            }
+
+        # 交叉引用
+        cross_refs = self._extract_cross_refs(text)
+
+        return {
+            "clauses": clauses,
+            "clause_count": len(clauses),
+            "attachments": attachments,
+            "attachment_count": len(attachments),
+            "cross_refs": cross_refs,
+            "cross_ref_count": len(cross_refs),
+        }
+
+    def validate_skeleton(self, source_skel: dict, target_skel: dict) -> list[dict]:
+        """
+        比较源文和译文的文档骨架。
+
+        检查项：
+        1. 条款数量是否一致
+        2. 附件数量/编号是否一致
+        3. 交叉引用数是否偏差过大（>20%为异常）
+        """
+        issues = []
+
+        sc = source_skel.get("clause_count", 0)
+        tc = target_skel.get("clause_count", 0)
+        if sc != tc and sc > 0 and tc > 0:
+            issues.append({
+                "type": "clause_count_mismatch",
+                "detail": f"条款数量不一致: 源文{sc} vs 译文{tc}",
+                "severity": "error" if abs(sc - tc) > 2 else "warning",
+            })
+
+        sa = source_skel.get("attachment_count", 0)
+        ta = target_skel.get("attachment_count", 0)
+        if sa != ta:
+            issues.append({
+                "type": "attachment_count_mismatch",
+                "detail": f"附件数量不一致: 源文{sa} vs 译文{ta}",
+                "severity": "error" if sa > 0 or ta > 0 else "warning",
+            })
+
+        sr = source_skel.get("cross_ref_count", 0)
+        tr = target_skel.get("cross_ref_count", 0)
+        if sr > 0 and tr > 0:
+            ratio = abs(sr - tr) / max(sr, tr)
+            if ratio > 0.2:
+                issues.append({
+                    "type": "cross_ref_deviation",
+                    "detail": f"交叉引用数偏差: 源文{sr} vs 译文{tr} ({ratio:.0%})",
+                    "severity": "warning" if ratio < 0.4 else "error",
+                })
+
+        return issues
+
+    def _clause_depth(self, number: str) -> int:
+        """计算条款编号的嵌套深度"""
+        # Article/Section → depth 0
+        # 1. → depth 0, 1.1 → depth 1, (a) → depth 2, (i) → depth 3
+        if '(' in number:
+            idx = number.find(')')
+            inner = number[1:idx]
+            if inner.isalpha() and len(inner) == 1:
+                return 2
+            elif re.match(r'^[ivxlcdm]+$', inner, re.IGNORECASE):
+                return 3
+            return 1
+        dots = number.count('.')
+        return dots
+
+    def _extract_cross_refs(self, text: str) -> list[dict]:
+        """提取交叉引用"""
+        refs = []
+        # 英文引用
+        for m in re.finditer(
+            r'(?:pursuant to|under|as set forth in|as defined in|referred to in)\s+'
+            r'(?:Section|Article|Clause|Exhibit|Schedule|Annex)\s+([\d.A-Z]+)',
+            text, re.IGNORECASE
+        ):
+            refs.append({"ref": m.group(0), "target": m.group(1), "lang": "en"})
+        # 中文引用
+        for m in re.finditer(
+            r'(?:根据|按照|依据|见|参见)\s*'
+            r'(?:第\s*[\d.]+条|附件\s*[A-Z]+|第\s*[\d.]+节)',
+            text
+        ):
+            refs.append({"ref": m.group(0), "target": "", "lang": "zh"})
+        return refs
+
+
+# ============================================================================
 # 6. LegalVerifier — 顶层调度器
 # ============================================================================
 
@@ -1256,6 +1462,7 @@ class LegalVerifier:
         self.cross_ref_validator = CrossReferenceValidator()
         self.amount_verifier = AmountVerifier()
         self.risk_tagger = HighRiskTagger()
+        self.doc_skeleton = DocumentSkeleton()
 
     def run_all(
         self,
@@ -1324,6 +1531,11 @@ class LegalVerifier:
         risk_clauses = self.risk_tagger.tag_clauses(source)
         risk_heatmap = self.risk_tagger.heatmap(risk_clauses)
 
+        # 9) 文档骨架解析（目录校验+附件映射）
+        source_skel = self.doc_skeleton.parse_skeleton(source)
+        target_skel = self.doc_skeleton.parse_skeleton(target)
+        skeleton_issues = self.doc_skeleton.validate_skeleton(source_skel, target_skel)
+
         # 汇总
         all_issues = (
             clause_issues + term_issues +
@@ -1352,6 +1564,11 @@ class LegalVerifier:
             'amount_patterns': amount_patterns,
             'high_risk_clauses': risk_clauses,
             'risk_heatmap': risk_heatmap,
+            'doc_skeleton': {
+                'source': source_skel,
+                'target': target_skel,
+                'issues': skeleton_issues,
+            },
             'summary': {
                 'total_issues': len(all_issues),
                 'by_severity': severity_counts,
