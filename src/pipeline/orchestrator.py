@@ -231,6 +231,18 @@ class TranslationPipeline:
         if on_stage_complete:
             on_stage_complete(PipelineStage.TRANSLATION, trans_result)
 
+        # ─── 阶段1.2：双直译对照（法律/学术模式）───
+        # 用稍高温度做第二次直译（非再创作），供主编择优融合
+        dual_result = None
+        if self.mode.value in ("legal", "academic"):
+            dual_result = await self._run_translation(
+                chapters, source_lang, target_lang,
+                scenario="compare",
+                temperature_bump=0.1,  # legal: 0.1→0.2, academic: 0.3→0.4
+            )
+            if dual_result.success:
+                self.tracker.log("translation", f"双直译对照完成(V1+V2)")
+
         # ─── 阶段1.5：再创作（仅文学模式） ───
         rewrite_result = None
         if use_rewrite:
@@ -271,9 +283,10 @@ class TranslationPipeline:
             translated_chapters = trans_result.data.get("translations", [])
             translated_texts = [tc.get("translation", "") for tc in translated_chapters]
 
-        # ─── 阶段2：主编终审（内置左/右/编三合一审核）───
+        # ─── 阶段2：主编终审（内置左/右/编三合一审核 + 双直译融合）───
         edit_result = await self._run_editing(
             translated_chapters, source_lang, target_lang,
+            dual_translations=dual_result.data.get("translations") if dual_result else None,
         )
         stages[PipelineStage.EDITING] = edit_result
         total_cost += self._extract_cost(edit_result)
@@ -382,6 +395,8 @@ class TranslationPipeline:
 
     async def _run_translation(
         self, chapters: list[dict], source_lang: str, target_lang: str,
+        scenario: str = "default",
+        temperature_bump: float = 0.0,
     ) -> StageResult:
         """阶段1：并行初译 — 温度随模式自动调整"""
         t0 = time.time()
@@ -392,13 +407,18 @@ class TranslationPipeline:
                 errors=["无章节数据"], duration_seconds=time.time() - t0,
             )
 
-        self.tracker.log("translation", f"并行翻译 {len(chapters)} 章 | 模式: {self.mode.value}")
+        label = f"并行翻译 {len(chapters)}章 | 模式:{self.mode.value}"
+        if temperature_bump:
+            label += f" | 温度+{temperature_bump}"
+        self.tracker.log("translation", label)
 
         tasks = []
         for i, ch in enumerate(chapters):
             translator = ChapterTranslatorAgent(self.registry, self.assets, mode=self.mode)
             tasks.append(self._translate_chapter_async(
                 translator, ch, i, chapters, source_lang, target_lang,
+                scenario=scenario,
+                temperature_bump=temperature_bump,
             ))
 
         translations = await asyncio.gather(*tasks)
@@ -407,7 +427,8 @@ class TranslationPipeline:
         self.tracker.log("translation", f"初译完成: {total}/{len(chapters)} 章")
         return StageResult(
             stage=PipelineStage.TRANSLATION, success=True,
-            data={"translations": translations, "chapters_translated": total},
+            data={"translations": translations, "chapters_translated": total,
+                  "scenario": scenario},
             duration_seconds=time.time() - t0,
         )
 
@@ -415,6 +436,8 @@ class TranslationPipeline:
         self, translator: ChapterTranslatorAgent, chapter: dict,
         index: int, all_chapters: list[dict],
         source_lang: str, target_lang: str,
+        scenario: str = "default",
+        temperature_bump: float = 0.0,
     ) -> dict:
         """单章异步翻译"""
         chapter_id = chapter.get("chapter_id", index + 1)
@@ -430,14 +453,17 @@ class TranslationPipeline:
             target_lang=target_lang,
             prev_chapter_tail=prev_tail,
             next_chapter_head=next_head,
+            scenario=scenario,
+            temperature_bump=temperature_bump,
         )
         return result.data if result.success else {"chapter_id": chapter_id, "error": result.error}
 
     async def _run_editing(
         self, translations: list[dict], source_lang: str, target_lang: str,
+        dual_translations: list[dict] = None,
     ) -> StageResult:
         """
-        阶段2：主编终审 — 内置左校对/右校对/正文编辑三合一审核。
+        阶段2：主编终审 — 内置左/右/编三合一审核 + 双直译融合。
 
         根据模式自动启用不同子职能：
         - 所有模式：统稿润色（基础职能）
@@ -454,7 +480,12 @@ class TranslationPipeline:
 
         self.tracker.log("editing", f"主编终审 | 模式: {self.mode.value}")
 
-        # 主编统稿（基础职能，所有模式）
+        # 主编统稿（双直译融合：V1+V2同时传入）
+        # 将V2版本合并到翻译列表中
+        if dual_translations:
+            for i, t in enumerate(translations):
+                if i < len(dual_translations):
+                    t["v2_compare"] = dual_translations[i].get("translation", "")
         result = self.chief_editor.draft_mode(
             chapter_translations=translations,
             source_lang=source_lang,

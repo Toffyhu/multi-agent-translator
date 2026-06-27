@@ -36,6 +36,7 @@ class ChapterTranslatorAgent(BaseAgent):
         prev_chapter_tail: str = "",
         next_chapter_head: str = "",
         scenario: str = "default",
+        temperature_bump: float = 0.0,
     ) -> AgentResult:
         """
         翻译单个章节。
@@ -71,7 +72,7 @@ class ChapterTranslatorAgent(BaseAgent):
             "literary": 0.6,
             "legal": 0.1,
             "academic": 0.3,
-        }.get(self.mode.value if self.mode else "literary", 0.6)
+        }.get(self.mode.value if self.mode else "literary", 0.6) + temperature_bump
 
         response_text, context = self._call_llm(
             system_prompt=system_prompt,

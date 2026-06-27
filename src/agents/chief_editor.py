@@ -114,6 +114,9 @@ class ChiefEditorAgent(BaseAgent):
         # 提取原文（法律/学术模式编辑器需要原文对照）
         source = chapter.get("source_text", chapter.get("original", ""))
         translation = chapter.get("translation", chapter.get("raw_translation", ""))
+        v2_compare = chapter.get("v2_compare", "")
+        # 双直译融合标记：V2版存在 → 编辑时同时对比V1和V2
+        chapter["_v2_for_prompt"] = v2_compare
 
         # ── 法律模式：先运行确定性校验引擎（轨道1）──
         verifier_findings = ""
@@ -180,11 +183,12 @@ class ChiefEditorAgent(BaseAgent):
         chapter_id = chapter.get("chapter_id", "?")
         chapter_title = chapter.get("title", "")
         translation = chapter.get("translation", chapter.get("raw_translation", ""))
+        v2 = chapter.get("_v2_for_prompt", "")  # 双直译V2版
 
         if self.mode.value == "legal":
-            return self._legal_edit_prompt(chapter_id, chapter_title, translation, prev, next_t, source)
+            return self._legal_edit_prompt(chapter_id, chapter_title, translation, prev, next_t, source, v2)
         elif self.mode.value == "academic":
-            return self._academic_edit_prompt(chapter_id, chapter_title, translation, prev, next_t, source)
+            return self._academic_edit_prompt(chapter_id, chapter_title, translation, prev, next_t, source, v2)
         else:
             return self._literary_edit_prompt(chapter_id, chapter_title, translation, prev, next_t)
 
@@ -223,7 +227,7 @@ class ChiefEditorAgent(BaseAgent):
         return system, user
 
     def _legal_edit_prompt(
-        self, ch_id, ch_title, trans, prev, next_t, source: str = "",
+        self, ch_id, ch_title, trans, prev, next_t, source: str = "", v2: str = "",
     ) -> tuple[str, str]:
         """法律模式统稿提示词 — 含英文原文对照"""
         system = """你是一位法律文书翻译审核专家。你的唯一任务是确保中译文与英文原文在条款义务上完全对应。
@@ -254,22 +258,25 @@ class ChiefEditorAgent(BaseAgent):
 
         user = f"""请审核以下法律译文：{source_block}
 
+{"## 📝 对比版本（V2直译 · 温度稍高 · 供对照融合）" + chr(10) + "```" + chr(10) + v2[:3000] + chr(10) + "```" if v2 else ""}
+
 ### 条款段 {ch_id}
 
 {self._maybe_add_context(prev, '前段参考')}
 
-### 中文译文：
+### V1 中文译文（低温直译）：
 
 {trans}
 
 {self._maybe_add_context(next_t, '后段参考')}
 
-请逐条对照英文原文，审核中文译文，标记所有偏差。"""
+请逐条对照英文原文，审核中文译文，标记所有偏差。
+{"如有V1和V2两个版本，请择每一句最准确的版本融合输出。" if v2 else ""}"""
 
         return system, user
 
     def _academic_edit_prompt(
-        self, ch_id, ch_title, trans, prev, next_t, source: str = "",
+        self, ch_id, ch_title, trans, prev, next_t, source: str = "", v2: str = "",
     ) -> tuple[str, str]:
         """学术模式统稿提示词 — 含英文原文对照"""
         system = """你是学术文献翻译审校专家。任务是保证学术译文的准确性、术语规范性和论证完整性。
@@ -299,13 +306,17 @@ class ChiefEditorAgent(BaseAgent):
 
         user = f"""请审校以下学术译文：{source_block}
 
+{"## 📝 对比版本（V2直译 · 温度稍高 · 供对照融合）" + chr(10) + "```" + chr(10) + v2[:3000] + chr(10) + "```" + chr(10) if v2 else ""}
 ### 第{ch_id}章 {ch_title}
 
 {self._maybe_add_context(prev, '前章衔接')}
 
+### V1 中文译文（直译）：
+
 {trans}
 
-{self._maybe_add_context(next_t, '后章衔接')}"""
+{self._maybe_add_context(next_t, '后章衔接')}
+{"如有V1和V2两个版本，请择每一句最准确的版本融合输出。" if v2 else ""}"""
 
         return system, user
 
