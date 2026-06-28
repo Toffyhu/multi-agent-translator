@@ -32,28 +32,28 @@ providers:
 
   # ── 阿里云百炼：全系模型免费额度优先 ──
   # 模型ID必须精确匹配DashScope控制台显示的模型名
-  # 旧名(qwen3-max/qwen-plus)走付费通道，新名(qwen3.7-max等)走免费额度
+  # 旧名(qwen3-max/qwen-plus)走付费通道，新名(qwen-max等)走免费额度
   aliyun:
     base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
     api_key_env: "DASHSCOPE_API_KEY"
     models:
       # ── Qwen系列（每款100万免费token，使用正确模型ID） ──
-      qwen3.7-max:
-        id: "qwen3.7-max"
+      qwen-max:
+        id: "qwen-max"
         context_window: 1048576
         cost_per_1k_input: 0.00000
         cost_per_1k_output: 0.00000
         tags: [free-tier, reasoning, long-context, chinese-best]
         free_tier: "100万token"
-      qwen3.7-plus:
-        id: "qwen3.7-plus"
+      qwen-plus:
+        id: "qwen-plus"
         context_window: 131072
         cost_per_1k_input: 0.00000
         cost_per_1k_output: 0.00000
         tags: [free-tier, fast, chinese]
         free_tier: "100万token"
-      qwen3.6-flash:
-        id: "qwen3.6-flash"
+      qwen-turbo:
+        id: "qwen-turbo"
         context_window: 131072
         cost_per_1k_input: 0.00000
         cost_per_1k_output: 0.00000
@@ -165,47 +165,47 @@ providers:
         tags: [reasoning, literary, reference-only]
 
 # ─── Agent → 模型映射（免费额度精打细算版） ───
-# 原则: 能用qwen3.6-flash解决的问题不用plus，能用plus不用max
+# 原则: 能用qwen-turbo解决的问题不用plus，能用plus不用max
 # max仅保留用于全书分析和复杂事实核查
 agent_model_mapping:
   book_analyzer:        # ①全书分析（需要1M长上下文+深度分析）
-    primary: "aliyun/qwen3.7-max"
-    fallback: "aliyun/qwen3.7-plus"
+    primary: "aliyun/qwen-max"
+    fallback: "aliyun/qwen-plus"
     rationale: >
-      全书分析仅跑一次，需要1M上下文。qwen3.7-max推理能力强。
+      全书分析仅跑一次，需要1M上下文。qwen-max推理能力强。
 
   term_stylist:          # ②术语风格（短文本，快速分析）
-    primary: "aliyun/qwen3.6-flash"
-    fallback: "aliyun/qwen3.7-plus"
+    primary: "aliyun/qwen-turbo"
+    fallback: "aliyun/qwen-plus"
     rationale: >
-      术语分析文本量小，qwen3.6-flash足够快速完成。省token给max场景。
+      术语分析文本量小，qwen-turbo足够快速完成。省token给max场景。
 
   chapter_translator:    # ③分章翻译（主力生产环节）
-    default: "aliyun/qwen3.7-plus"       # 70%通用章节
-    legal: "aliyun/qwen3.7-max"          # 法律/复杂文本
-    literary: "aliyun/qwen3.7-max"       # 关键文学段落
+    default: "aliyun/qwen-plus"       # 70%通用章节
+    legal: "aliyun/qwen-max"          # 法律/复杂文本
+    literary: "aliyun/qwen-max"       # 关键文学段落
     terminology_heavy: "aliyun/qwen-plus"  # 术语密集型
-    easy: "aliyun/qwen3.6-flash"         # 简单叙述章节
+    easy: "aliyun/qwen-turbo"         # 简单叙述章节
     rationale: >
-      主力用qwen3.7-plus，均衡速度与质量（token消耗约max的1/10）。
-      简单的叙述章节用qwen3.6-flash最省。
+      主力用qwen-plus，均衡速度与质量（token消耗约max的1/10）。
+      简单的叙述章节用qwen-turbo最省。
       复杂文本/文学段落才用max。
 
   chief_editor:          # ④主编终审（校对纠错，不需要深度推理）
-    primary: "aliyun/qwen3.7-plus"
-    fallback: "aliyun/qwen3.6-flash"
+    primary: "aliyun/qwen-plus"
+    fallback: "aliyun/qwen-turbo"
     rationale: >
       编辑任务主要是修正代词/标点等表层问题，plus足够。
       不需要max的深度推理。
 
   rewriter:              # ⑤再创重述（创造性写作）
-    primary: "aliyun/qwen3.7-plus"
-    fallback: "aliyun/qwen3.6-flash"
+    primary: "aliyun/qwen-plus"
+    fallback: "aliyun/qwen-turbo"
     rationale: >
       再创重述需要文学创造力，plus的创意能力优于flash。
 
   fact_checker:          # ⑥事实核查（人名地名数字校验）
-    primary: "aliyun/qwen3.7-plus"
-    fallback: "aliyun/qwen3.7-max"
+    primary: "aliyun/qwen-plus"
+    fallback: "aliyun/qwen-max"
     rationale: >
       常规核查plus足够。大段批量核查需要max的1M上下文。
