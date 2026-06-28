@@ -177,37 +177,42 @@ providers:
         cost_per_1k_output: 0.07500
         tags: [reasoning, literary, reference-only]
 
-# ─── Agent → 模型映射（免费额度精打细算版） ───
-# 原则: 能用qwen-turbo解决的问题不用plus，能用plus不用max
-# max仅保留用于全书分析和复杂事实核查
+# ─── Agent → 模型映射（场景自适应·精打细算版） ───
+# 核心分工:
+#   知识萃取类任务 → GLM-4-Flash（免费，适合大批量处理）
+#   精准翻译类任务 → Qwen-PLUS（专业性强，适合发表级）
+#   复杂/法律/文学  → Qwen-MAX（强推理，适合高难度）
+#   简单/快速类任务 → Qwen-Turbo（最快，适合短文本）
 agent_model_mapping:
-  book_analyzer:        # ①全书分析（需要1M长上下文+深度分析）
+  book_analyzer:        # ①全书分析（需要1M长上下文+深度分析——用MAX）
     primary: "aliyun/qwen-max"
     fallback: "aliyun/qwen-plus"
     rationale: >
       全书分析仅跑一次，需要1M上下文。qwen-max推理能力强。
 
-  term_stylist:          # ②术语风格（短文本，快速分析）
-    primary: "aliyun/qwen-turbo"
-    fallback: "zhipu/glm-4-flash"
+  term_stylist:          # ②术语风格·知识萃取（短文本·低精度要求→GLM免费）
+    primary: "zhipu/glm-4-flash"    # 知识萃取用GLM（免费，大批量无所谓）
+    fallback: "aliyun/qwen-turbo"   # GLM出问题时切turbo
     rationale: >
-      术语分析文本量小，qwen-turbo最快，glm-4-flash免费备用。
+      术语分析和知识萃取是批量任务，不需要最高精度。
+      GLM-4-Flash免费无额度限制，适合大规模知识库学习。
 
-  chapter_translator:    # ③分章翻译（主力生产环节）
-    default: "aliyun/qwen-plus"       # 70%通用章节
-    legal: "aliyun/qwen-max"          # 法律/复杂文本
-    literary: "aliyun/qwen-max"       # 关键文学段落
-    compare: "zhipu/glm-4-flash"      # 跨模型对照(免费GLM)
-    terminology_heavy: "aliyun/qwen-plus"  # 术语密集型
-    easy: "aliyun/qwen-turbo"         # 简单叙述章节
+  chapter_translator:    # ③分章翻译（按场景自动切换模型）
+    default: "aliyun/qwen-plus"       # 默认/学术：PLUS（精准专业）
+    legal: "aliyun/qwen-max"          # 法律：MAX（措辞严谨）
+    literary: "aliyun/qwen-max"       # 文学：MAX（创作力强）
+    compare: "zhipu/glm-4-flash"      # 跨模型对照：GLM（免费备选）
+    bulk: "zhipu/glm-4-flash"         # 大批量/科普：GLM（免费，不限量）
+    terminology_heavy: "aliyun/qwen-plus"  # 术语密集型：PLUS
+    easy: "aliyun/qwen-turbo"         # 简单叙述：TURBO（最快）
     rationale: >
       主力用qwen-plus，均衡速度与质量（token消耗约max的1/10）。
       简单的叙述章节用qwen-turbo最省。
       复杂文本/文学段落才用max。
 
-  chief_editor:          # ④主编终审（校对纠错，不需要深度推理）
-    primary: "aliyun/qwen-plus"
-    fallback: "aliyun/qwen-turbo"
+  chief_editor:          # ④主编终审（按场景选模型）
+    primary: "aliyun/qwen-plus"       # 法律/精准审核：PLUS
+    fallback: "zhipu/glm-4-flash"     # 科普/草稿审核：GLM免费
     rationale: >
       编辑任务主要是修正代词/标点等表层问题，plus足够。
       不需要max的深度推理。
@@ -219,7 +224,13 @@ agent_model_mapping:
       再创重述需要文学创造力，plus的创意能力优于flash。
 
   fact_checker:          # ⑥事实核查（人名地名数字校验）
-    primary: "aliyun/qwen-plus"
-    fallback: "aliyun/qwen-max"
+    primary: "aliyun/qwen-plus"       # 核心核查：PLUS
+    fallback: "zhipu/glm-4-flash"     # 批量核查：GLM免费
+
+  knowledge_extractor:   # ⑦知识萃取（IMA库学习/术语提取/技能生成）
+    primary: "zhipu/glm-4-flash"      # 萃取用GLM（免费，适合大规模循环）
+    rationale: >
+      知识萃取是大规模批量任务（如IMA知识库学习），
+      不需要最高翻译精度，GLM免费+无额度限制，最适合这类场景。
     rationale: >
       常规核查plus足够。大段批量核查需要max的1M上下文。
