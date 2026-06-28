@@ -128,17 +128,30 @@ providers:
         cost_per_1k_output: 0.00250
         tags: [ultra-long-context, chinese-creative, legal, literary]
 
-  # ── 智谱 GLM-4.6（工具调用稳定，国内可访问） ──
+  # ── 智谱 GLM（工具调用稳定，国内可访问） ──
   zhipu:
     base_url: "https://open.bigmodel.cn/api/paas/v4"
     api_key_env: "ZHIPU_API_KEY"
     models:
-      glm-4.6:
-        id: "glm-4.6"
-        context_window: 200000
-        cost_per_1k_input: 0.00050
-        cost_per_1k_output: 0.00150
-        tags: [tool-calling, structured-output, enterprise]
+      glm-4-flash:
+        id: "glm-4-flash"
+        context_window: 128000
+        cost_per_1k_input: 0.00000  # 免费
+        cost_per_1k_output: 0.00000
+        tags: [free-tier, fast, cheap, chinese]
+        free_tier: "免费"
+      glm-4-plus:
+        id: "glm-4-plus"
+        context_window: 128000
+        cost_per_1k_input: 0.00070
+        cost_per_1k_output: 0.00070
+        tags: [reasoning, chinese, paid]
+      glm-4:
+        id: "glm-4"
+        context_window: 128000
+        cost_per_1k_input: 0.00070
+        cost_per_1k_output: 0.00070
+        tags: [reasoning, chinese, paid]
 
   # ── OpenAI（国内不可直接访问，仅作参考/备选） ──
   openai:
@@ -176,14 +189,15 @@ agent_model_mapping:
 
   term_stylist:          # ②术语风格（短文本，快速分析）
     primary: "aliyun/qwen-turbo"
-    fallback: "aliyun/qwen-plus"
+    fallback: "zhipu/glm-4-flash"
     rationale: >
-      术语分析文本量小，qwen-turbo足够快速完成。省token给max场景。
+      术语分析文本量小，qwen-turbo最快，glm-4-flash免费备用。
 
   chapter_translator:    # ③分章翻译（主力生产环节）
     default: "aliyun/qwen-plus"       # 70%通用章节
     legal: "aliyun/qwen-max"          # 法律/复杂文本
     literary: "aliyun/qwen-max"       # 关键文学段落
+    compare: "zhipu/glm-4-flash"      # 跨模型对照(免费GLM)
     terminology_heavy: "aliyun/qwen-plus"  # 术语密集型
     easy: "aliyun/qwen-turbo"         # 简单叙述章节
     rationale: >
