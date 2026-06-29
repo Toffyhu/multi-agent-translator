@@ -1,6 +1,6 @@
 {
   "skill_name": "legal-translation",
-  "version": "2.1",
+  "version": "2.2",
   "generated_at": "2026-06-26 12:30:16",
   "source": "IMA知识库「法律英语」+「法律实务工具箱」→ Agent知识萃取",
   "agents_contributing": [
@@ -508,6 +508,30 @@
       "pattern": "(?i)\\b(?:upon|after|before|until|when)\\s+",
       "severity": "high",
       "fix": "调整语序，确保时间/条件状语从句在译文中紧密修饰其逻辑上的主句动作，避免逻辑倒置。"
+    },
+    {
+      "name": "附件/附表交叉引用断链",
+      "target": "检测Exhibit/Schedule/Annex/Appendix引用目标是否存在",
+      "severity": "high",
+      "method": "deterministic",
+      "pattern": "(?:Exhibit|Schedule|Annex|Appendix)\\s+([A-Z0-9]+)",
+      "fix": "提取所有附件引用编号→在文档中搜索目标→不存在则为断链。附件编号错误可能导致权利义务指向不明。"
+    },
+    {
+      "name": "indemnify vs compensate术语混淆",
+      "target": "检测indemnify(赔偿·填补损失)与compensate(补偿·公平给付)的误译",
+      "severity": "high",
+      "method": "llm",
+      "pattern": "(?i)\\b(indemnify|indemnification|compensate|compensation)\\b",
+      "fix": "indemnify→赔偿（填补损失）/ compensate→补偿（公平给付）。两者法律性质不同，不可互换。"
+    },
+    {
+      "name": "including but not limited to省略",
+      "target": "检测including是否遗漏了紧随其后的but not limited to",
+      "severity": "medium",
+      "method": "regex",
+      "pattern": "(?i)including\\s+but\\s+not\\s+limited\\s+to",
+      "fix": "including but not limited to→包括但不限于。仅译including会不当限缩保护范围。"
     }
   ],
   "quality_checklist": {
@@ -520,7 +544,9 @@
       "定义术语全篇译名一致",
       "定义术语(Defined Terms)全篇译名100%一致，且与术语表严格对应——不一致一票否决",
       "条款编号完整无误——源文译文的Article/Section/Clause编号层级+序列完全一致",
-      "shall→应当/须（不得出现'将''会'等弱化译法）"
+      "shall→应当/须（不得出现'将''会'等弱化译法）",
+      "附件/附表（Exhibit/Schedule）引用编号与正文一一对应，无断链",
+      "indemnify(赔偿)与compensate(补偿)术语区分正确"
     ],
     "should_pass": [
       "长句拆分后逻辑连贯，无歧义",
@@ -533,7 +559,7 @@
     "trigger": "1. 涉及核心责任分配、赔偿上限、免责条款的复杂长句；2. 包含多重条件嵌套（如 if... unless... provided that...）的条款；3. 源文本本身存在语法瑕疵或表达模糊，需确认译文是否进行了合理的法律解释；4. 质量抽检中发现的高危缺陷段落。",
     "method": "1. 由未看过源文本的独立译者（或LLM）将中文译文翻译回英文；2. 将回译英文与源英文进行逐句比对（Diff分析）；3. 重点审查回译文本在义务主体、条件触发、时间节点上是否与源文本存在实质性差异；4. 若存在差异，需判定是译文错误还是源文模糊，并据此修正中文译文。"
   },
-  "updated_at": "2026-06-27 12:13:06",
+  "updated_at": "2026-06-29 08:26:46",
   "changelog": [
     "P0: shall=应→应当(民法典标准)/须(强义务语境)",
     "P0: may=可→有权(积极权利)/可以(一般允许)",
@@ -545,7 +571,8 @@
     "补充6个情态动词复合结构(shall not/may not等)",
     "新增责任界定术语类(indemnify vs compensate等)",
     "新增程序与效力术语类(conditions precedent/irrevocable等)",
-    "v2.1: 术语风格师萃取风格锁定词表+义务强度分级+易混淆术语对照"
+    "v2.1: 术语风格师萃取风格锁定词表+义务强度分级+易混淆术语对照",
+    "v2.2: 补充3条缺失检测规则(附件断链/indemnify混淆/including省略)"
   ],
   "style_locking_glossary": {
     "责任分配": [

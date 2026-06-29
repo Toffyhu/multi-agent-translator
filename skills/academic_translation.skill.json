@@ -1,6 +1,6 @@
 {
   "skill_name": "academic-translation",
-  "version": "3.0",
+  "version": "3.1",
   "generated_at": "2026-06-27 13:01:17",
   "source": "IMA知识库「机器学习与神经网络」+ 术语风格师 AI/ML 术语萃取 + 4个AI论文知识库(经典AI论文/AI论文最新精选/AI论文/AI论文撰写)",
   "agents_contributing": [
@@ -652,11 +652,12 @@
     "References": "参考文献",
     "Appendix / Supplementary Material": "附录 / 补充材料"
   },
-  "updated_at": "2026-06-27 14:41:51",
+  "updated_at": "2026-06-29 08:26:46",
   "changelog": [
     "v2.0: 术语风格师深化术语(补充PyTorch/训练/注意力/部署)",
     "v2.0: 主编终审制定12+审校规则和质量标准",
-    "v3.0: 新增4个AI论文知识库学习 → 前沿LLM术语+论文写作表达+审校规则+误译模式"
+    "v3.0: 新增4个AI论文知识库学习 → 前沿LLM术语+论文写作表达+审校规则+误译模式",
+    "v3.1: 补充2条缺失检测规则(引用格式规范/会议名期刊名规范)"
   ],
   "academic_defect_rules": [
     {
@@ -805,6 +806,22 @@
       "severity": "high",
       "method": "llm",
       "pattern": ""
+    },
+    {
+      "name": "引用格式规范检测",
+      "target": "检测引文格式是否统一（如APA、MLA、IEEE混用），确保全篇一致",
+      "severity": "medium",
+      "method": "regex",
+      "pattern": "(?:\\b(?:et al\\.|pp\\.|vol\\.|no\\.|doi:|arXiv:|10\\.\\d{4,}))",
+      "fix": "全篇引用格式必须一致。若英文原文为APA格式，译文中的引用格式也应保持APA规范。不一致会导致学术不端风险。"
+    },
+    {
+      "name": "会议名/期刊名规范翻译",
+      "target": "检测会议名、期刊名是否被不规范翻译（应保留原名或使用标准译名）",
+      "severity": "medium",
+      "method": "llm",
+      "pattern": "(?i)\\b(Conference on|Proceedings of|Journal of|Transactions on|Symposium on|Workshop on)\\b",
+      "fix": "会议名和期刊名通常保留英文原名（如'CVPR 2024'），若有公认中文译名则使用标准译名。不可自行创译。"
     }
   ],
   "academic_quality_checklist": {
