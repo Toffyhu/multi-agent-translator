@@ -126,16 +126,13 @@ class ChiefEditorAgent(BaseAgent):
                 verifier = LegalVerifier()
                 results = verifier.run_all(
                     source=source, target=translation, definitions_section=source)
-                clause_issues = results.get("clause_tree", [])
-                term_issues = results.get("term_scan", [])
-                cross_ref = results.get("cross_refs", [])
-                punct = results.get("punctuation", [])
-                risk = results.get("risk_heatmap", {})
                 parts = []
-                if clause_issues: parts.append(f"• 【条款结构】{len(clause_issues)}项偏差")
-                if term_issues: parts.append(f"• 【术语一致】{len(term_issues)}项疑似")
-                if punct: parts.append(f"• 【标点格式】{len(punct)}处")
-                if risk: parts.append(f"• 【风险分布】critical={risk.get('distribution',{}).get('critical',0)}")
+                if results.get("clause_tree"): parts.append(f"• 【条款结构】{len(results['clause_tree'])}项偏差")
+                if results.get("term_scan"): parts.append(f"• 【术语一致】{len(results['term_scan'])}项疑似")
+                if results.get("punctuation"): parts.append(f"• 【标点格式】{len(results['punctuation'])}处")
+                if results.get("risk_heatmap"): parts.append(f"• 【风险分布】critical={results['risk_heatmap'].get('distribution',{}).get('critical',0)}")
+                sem = results.get("semantic_issues", [])
+                if sem: parts.append(f"• 【语义检查】{len(sem)}处可疑({', '.join(s.get('detail','')[:30] for s in sem[:3])})")
                 if parts: verifier_findings = "## ⚠️ 确定性校验引擎预扫描\n\n" + "\n".join(parts)
             except Exception as e:
                 verifier_findings = f"(校验引擎: {e})"

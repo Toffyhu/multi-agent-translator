@@ -1532,10 +1532,13 @@ class LegalVerifier:
         risk_clauses = self.risk_tagger.tag_clauses(source)
         risk_heatmap = self.risk_tagger.heatmap(risk_clauses)
 
-        # 9) 文档骨架解析（目录校验+附件映射）
+        # 9) 文档骨架解析
         source_skel = self.doc_skeleton.parse_skeleton(source)
         target_skel = self.doc_skeleton.parse_skeleton(target)
         skeleton_issues = self.doc_skeleton.validate_skeleton(source_skel, target_skel)
+
+        # 10) 法律语义双语检查
+        sem_issues = LegalSemanticGuard.scan(target)
 
         # 汇总
         all_issues = (
@@ -1544,7 +1547,8 @@ class LegalVerifier:
              for r in cross_ref_results] +
             amount_issues +
             punctuation_issues +
-            [{'type': 'date', **d, 'severity': 'info'} for d in date_issues]
+            [{'type': 'date', **d, 'severity': 'info'} for d in date_issues] +
+            [{'type': 'legal_semantic', **s, 'severity': s.get('severity','medium')} for s in sem_issues]
         )
 
         severity_counts: dict[str, int] = {'error': 0, 'warning': 0, 'info': 0}
@@ -1570,6 +1574,7 @@ class LegalVerifier:
                 'target': target_skel,
                 'issues': skeleton_issues,
             },
+            'semantic_issues': sem_issues,
             'summary': {
                 'total_issues': len(all_issues),
                 'by_severity': severity_counts,
@@ -1580,6 +1585,55 @@ class LegalVerifier:
 # ============================================================================
 # 自测入口
 # ============================================================================
+
+# ============================================================================
+# 6.5 LegalSemanticGuard — 法律语义双语检查
+# ============================================================================
+
+class LegalSemanticGuard:
+    """
+    法律翻译语义双语检查（确定性模式匹配）。
+    
+    检测中文译文中已知的高频法律翻译错误模式。
+    注意：只能做模式匹配级别的检测，深层语义需LLM辅助。
+    """
+    
+    PATTERNS = [
+        # 情态动词误译（容忍**加粗标记）
+        (r'(?:许可方|任何.*方|甲方|乙方)\**\s*(?:将|会)\**\s*(?:不|无)', 
+         "情态动词误译：shall→'将'/'会'，应为'应当/须'或'不得'", 'critical'),
+        # 附件误译
+        (r'展览\s*[A-Z0-9]', "法律术语误译：Exhibit应译为'附件'而非'展览'", 'high'),
+        # 附表误译
+        (r'时间表\s*[A-Z0-9]', "法律术语误译：Schedule在合同语境中应译为'附表'而非'时间表'", 'high'),
+        # 赔偿/补偿混淆
+        (r'赔偿.*补偿|补偿.*赔偿', "indemnify(赔偿)与compensate(补偿)可能混淆，两者法律性质不同", 'high'),
+        # including省略（中文不带'但不限于'的包括）
+        (r'(?:包括)(?!.*不限于)', "including可能遗漏'但不限于'(but not limited to)", 'medium'),
+    ]
+    
+    @staticmethod
+    def scan(target: str) -> list[dict]:
+        results = []
+        for pat, msg, sev in LegalSemanticGuard.PATTERNS:
+            for m in re.finditer(pat, target):
+                results.append({
+                    "type": "legal_mistrans",
+                    "detail": msg,
+                    "severity": sev,
+                    "context": target[max(0, m.start() - 30):m.end() + 30],
+                })
+        return results
+    
+    @staticmethod
+    def run_all(target: str) -> dict:
+        issues = LegalSemanticGuard.scan(target)
+        return {
+            "issues": issues,
+            "total": len(issues),
+            "by_severity": dict(Counter(i["severity"] for i in issues)),
+        }
+
 
 # ============================================================================
 # 7. AcademicGuard — 学术翻译确定性保护规则
@@ -1635,11 +1689,14 @@ class AcademicGuard:
     def detect_mistranslations(text: str) -> list[dict]:
         """检测论文高频误译"""
         patterns = [
-            (r'最先进的', '可能误译 state-of-the-art，学术语境应为"当前最优/最先进"', 'medium'),
+            (r'最先进的', '可能误译 state-of-the-art，学术语境应为"当前最优/最先进"', 'high'),
+            (r'最新(?:的|研究).*state', '可能误译 state-of-the-art，冗余写法"最新的state-of-the-art"应为"当前最优"', 'high'),
             (r'(?<![新])全新的', '可能误译 novel，学术语境应为"新颖的"', 'medium'),
-            (r'基础的(?:模型|方法)', '可能误译 baseline，应为"基线模型/方法"', 'low'),
+            (r'基础的(?:模型|方法)', '可能误译 baseline，应为"基线模型/方法"', 'medium'),
+            (r'基准(?:模型|方法)', '可能误译 baseline，学术语境应为"基线模型/方法"而非"基准"', 'medium'),
             (r'表现(?:好的|不错的)', '避免口语化表述，应为"性能优越/表现良好"', 'low'),
-            (r'最新(?:的|研究)', '可能误译 state-of-the-art 或 recent，应区分"当前最优"vs"最近"', 'medium'),
+            (r'最新(?:的|研究)(?!.*state)', '可能误译 state-of-the-art 或 recent，应区分"当前最优"vs"最近"', 'medium'),
+            (r'状态最优', '不规范译法，state-of-the-art标准译法为"当前最优"', 'low'),
         ]
         results = []
         for pat, msg, sev in patterns:
