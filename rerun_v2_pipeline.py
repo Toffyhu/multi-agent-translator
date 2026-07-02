@@ -9,9 +9,11 @@ from src.agents.chief_editor import ChiefEditorAgent
 from src.models.registry import ModelRegistry
 from src.assets.schema import AssetStore
 
-# 确保 API Key
+# 确保 API Key — 从环境变量读取，不硬编码
 if not os.environ.get('DASHSCOPE_API_KEY'):
-    os.environ['DASHSCOPE_API_KEY'] = 'sk-9812a101944b420ba5a09ea9dc9265c8'
+    print("⚠️ 请设置 DASHSCOPE_API_KEY 环境变量")
+    print("   export DASHSCOPE_API_KEY='你的阿里云APIKey'")
+    sys.exit(1)
 
 registry = ModelRegistry('config/models.yaml')
 assets = AssetStore('./test_assets_store')
